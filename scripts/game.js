@@ -1,57 +1,57 @@
 //Request External Scripts:
 (function LoadExternalScripts(){
-    $.ajaxSetup({
-        async: false
-    });
+    $.ajaxSetup({ async: false });
 
     $.getScript("scripts/requestanimframe.js");
     $.getScript("scripts/input/InputManager.js");
+    $.getScript("scripts/game/GameObject.js");
+    $.getScript("scripts/game/DisplayList.js");
 
-    $.ajaxSetup({
-        async: true
-    });
+    $.ajaxSetup({ async: true  });
 })();
 //===========================
 
-var GameObject = function(sprite_src){
-    var sprite = new Image();
-    sprite.src = sprite_src;
+//Game vars
+var player;
+//var canvas;
+//var ctx;
+var displayList = DisplayList();
 
-    return {
-        sprite: sprite,
-        x: 0,
-        y: 0,
-        rotation: 0
-    }
-}
-
+//Main Functions
 function Refresh(){
     requestAnimFrame(Refresh);
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
     Draw();
 }
 
 function Draw(){
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(player.sprite, player.x, player.y);    
+    canvas = displayList.canvas;
+    displayList.context.clearRect(0, 0, canvas.width, canvas.height);
+    displayList.context.drawImage(player.sprite, player.x, player.y);    
 }
 
-//==
-var player;
-var canvas;
-var ctx;
+function Resize(){
+    displayList.canvas.width = window.innerWidth;
+    displayList.canvas.height = window.innerHeight;
+}
+
+function ProccessInput(){
+    player.x = STInputManager.input_position.x;
+    player.y = STInputManager.input_position.y;
+}
+//===========================
+
+
+
+//Events
+$(window).resize(Resize);
+STInputManager.addEventListener("stinputmove", ProccessInput);
 
 //Startup
 $(document).ready(function(){
-    canvas = document.getElementById("game-area");
-    ctx = canvas.getContext("2d");
-    STInputManager.addEventListener("stinputmove", function(event){
-        player.x = STInputManager.input_position.x;
-        player.y = STInputManager.input_position.y;
-    });
-    player = new GameObject("images/character.png");
-
+   displayList.canvas = document.getElementById("game-area");
+   displayList.context = displayList.canvas.getContext("2d");
+   player = new GameObject("images/character.png");
+   
+   Resize();
    Refresh(); 
-    //setInterval(gameloop, 1000/60);
 });
