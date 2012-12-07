@@ -6,10 +6,16 @@
     -o-transform: translateZ(0);
 }
 
-.player{
-	position: fixed;
-}
-
 #game-area{
     background-color: #666;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+#box2d-debug{
+    background-color: transparent;
+    position: fixed;
+    top: 0;
+    left: 0;
 }
