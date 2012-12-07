@@ -74,10 +74,10 @@ function Box2dInit() {
  
  //create ground
  bodyDef.type = b2Body.b2_staticBody;
- bodyDef.position.x = 9;
+ bodyDef.position.x = 0;
  bodyDef.position.y = 13;
  fixDef.shape = new b2PolygonShape;
- fixDef.shape.SetAsBox(10, 0.5);
+ fixDef.shape.SetAsBox(10, 0.1);
  world.CreateBody(bodyDef).CreateFixture(fixDef);
  
  //create some objects
@@ -102,7 +102,7 @@ function Box2dInit() {
  //setup debug draw
  var debugDraw = new b2DebugDraw();
     debugDraw.SetSprite(displayList.debug.getContext("2d"));
-    debugDraw.SetDrawScale(30.0);
+    debugDraw.SetDrawScale(12.0);
     debugDraw.SetFillAlpha(0.3);
     debugDraw.SetLineThickness(1.0);
     debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit);
