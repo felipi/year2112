@@ -28,7 +28,7 @@
     var d = document;
     var c = {
         COCOS2D_DEBUG:2, //0 to turn debug off, 1 for basic debug, and 2 for full debug
-        box2d:false,
+        box2d:true,
         chipmunk:false,
         showFPS:true,
         frameRate:60,
@@ -36,6 +36,7 @@
         engineDir:'libs/cocos2d/',
         //SingleEngineFile:'',
         appFiles:[
+            'libs/box2d/box2d.js',
             'src/resource.js',
             'src/myApp.js'//add your own files in order here
         ]
