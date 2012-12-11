@@ -38,7 +38,8 @@
         appFiles:[
             'libs/box2d/box2d.js',
             'src/resource.js',
-            'src/myApp.js'//add your own files in order here
+            'src/myApp.js',
+            'src/boxTest.js'
         ]
     };
     window.addEventListener('DOMContentLoaded', function () {

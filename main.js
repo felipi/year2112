@@ -98,7 +98,7 @@ cc.adjustSizeForWindow = function () {
     cc.Director.getInstance().setContentScaleFactor(xScale);
 }
 
-var myApp = new cocos2dApp(MyScene);
+var myApp = new cocos2dApp(Box2DScene);
 
 var AnchorPointCenter = new cc.Point(0.5, 0.5);
 var AnchorPointTop = new cc.Point(0.5, 1);
