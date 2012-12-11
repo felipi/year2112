@@ -3,7 +3,10 @@
     $.ajaxSetup({ async: false });
 
     $.getScript("libs/box2d.js");
+    $.getScript("libs/gamepad.js");
+
     $.getScript("scripts/requestanimframe.js");
+    
     $.getScript("scripts/input/InputManager.js");
     $.getScript("scripts/game/GameObject.js");
     $.getScript("scripts/game/DisplayList.js");
@@ -14,9 +17,7 @@
 
 //Game vars
 var player;
-//var canvas;
-//var ctx;
-var displayList = DisplayList();
+var displayList = new DisplayList();
 
 //Main Functions
 function Refresh(){
@@ -38,8 +39,8 @@ function Resize(){
 }
 
 function ProccessInput(){
-    player.x = STInputManager.input_position.x;
-    player.y = STInputManager.input_position.y;
+    //player.x = STInputManager.input_position.x;
+    //player.y = STInputManager.input_position.y;
 }
 //===========================
 
@@ -133,7 +134,7 @@ $(document).ready(function(){
    displayList.context = displayList.canvas.getContext("2d");
    player = new GameObject("images/character.png");
    
-   Box2dInit();
    Resize();
+   Box2dInit();
    Refresh(); 
 });
