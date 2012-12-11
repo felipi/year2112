@@ -65,21 +65,21 @@ var cocos2dApp = cc.Application.extend({
 
 cc.adjustSizeForWindow = function () {
     var margin = document.documentElement.clientWidth - document.body.clientWidth;
-    if (document.documentElement.clientWidth < cc.originalCanvasSize.width) {
-        cc.canvas.width = cc.originalCanvasSize.width;
-    } else {
+    //if (document.documentElement.clientWidth < cc.originalCanvasSize.width) {
+    //    cc.canvas.width = cc.originalCanvasSize.width;
+    //} else {
         cc.canvas.width = document.documentElement.clientWidth - margin;
-    }
-    if (document.documentElement.clientHeight < cc.originalCanvasSize.height) {
-        cc.canvas.height = cc.originalCanvasSize.height;
-    } else {
+    //}
+    //if (document.documentElement.clientHeight < cc.originalCanvasSize.height) {
+    //    cc.canvas.height = cc.originalCanvasSize.height;
+    //} else {
         cc.canvas.height = document.documentElement.clientHeight - margin;
-    }
+    //}
 
     var xScale = cc.canvas.width / cc.originalCanvasSize.width;
     var yScale = cc.canvas.height / cc.originalCanvasSize.height;
-    if (xScale > yScale) {
-        //xScale = yScale;
+    if (yScale > xScale) {
+        //yScale = xScale;
     }
     cc.canvas.width = cc.originalCanvasSize.width * xScale;
     cc.canvas.height = cc.originalCanvasSize.height * yScale;
