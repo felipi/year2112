@@ -31,6 +31,7 @@ var Box2DTest = cc.Layer.extend({
     circle:null,
     sprite:null,
     world:null,
+    ptmRatio:30,
 
     init:function () {
         var selfPointer = this;
@@ -38,6 +39,7 @@ var Box2DTest = cc.Layer.extend({
         //////////////////////////////
         // 1. super init first
         this._super();
+        cc.adjustSizeForWindow();
 
         /////////////////////////////
         // 2. add a menu item with "X" image, which is clicked to quit the program
@@ -77,6 +79,7 @@ var Box2DTest = cc.Layer.extend({
         this.sprite.setAnchorPoint(cc.p(0.5, 0.5));
         this.sprite.setPosition(cc.p(size.width / 2, size.height / 2));
 
+        var debugLayer = document.getElementById("debugDraw");
         lazyLayer.addChild(this.sprite, 0);
         lazyLayer.adjustSizeForCanvas();
         window.addEventListener("resize", function (event) {
@@ -114,11 +117,14 @@ var Box2DTest = cc.Layer.extend({
      var bodyDef = new b2BodyDef;
      
      //create ground
+     var size = cc.Director.getInstance().getWinSizeInPixels();
+     size.height = window.innerHeight;
+     console.log(size);
      bodyDef.type = b2Body.b2_staticBody;
      bodyDef.position.x = 0;
-     bodyDef.position.y = 13;
+     bodyDef.position.y = size.height/this.ptmRatio;
      fixDef.shape = new b2PolygonShape;
-     fixDef.shape.SetAsBox(10, 0.1);
+     fixDef.shape.SetAsBox(size.width/this.ptmRatio, 0.5);
      world.CreateBody(bodyDef).CreateFixture(fixDef);
      
      //create some objects
@@ -144,7 +150,7 @@ var Box2DTest = cc.Layer.extend({
      var debugDraw = new b2DebugDraw();
         //debugDraw.SetSprite(displayList.debug.getContext("2d"));
         debugDraw.SetSprite(document.getElementById("debugDraw").getContext("2d"));
-        debugDraw.SetDrawScale(12.0);
+        debugDraw.SetDrawScale(this.ptmRatio);
         debugDraw.SetFillAlpha(0.3);
         debugDraw.SetLineThickness(1.0);
         debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit);
