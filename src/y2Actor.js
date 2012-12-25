@@ -7,22 +7,22 @@ var Y2Actor = cc.Sprite.extend({
     furtiveness: 1, //How perceivable is the actor actions to others
     stealthArea: 5, //Area where the actor is in stealth mode, in meters
     distanceFlew: 0, //Distance traveled on air
-    control: 1, //How controlable is the actor
-    stability: 0, //How stable the actor is after control is ended
+    control: 0.3, //How controlable is the actor
+    stability: 4, //How stable the actor is after control is ended
     maneuvering: 0, //Experience points gained from maneuvering actions
     perception: 0, //How slower the world seems to this actor
     grazingLevel: 0, //The overall level of grazing skill of this actor
     grazing: 0, //Temporary grazing level, drains when not grazing
-    fireRate: 5, //Rate of fire for all Bullet Guns
+    fireRate: 7, //Rate of fire for all Bullet Guns
     bulletsShot: 0, //How many bullets this actor has shot
-    accuracy: 50, //Weapon accuracy
+    accuracy: 75, //Weapon accuracy
     criticalShotChance: 0, //Critical chance for guns
     criticalShotDamage: 2, //Percent of critical damage for guns
     criticalMeleeChance: 0, //Critical chance for melee attacks
     criticalMeleeDamage: 4, //Percent of critical damage for melee attacks
     chargeShot: 0, //Overall level of charge shot skill
     chargeSpeed: 1, //Speed of charging weapons
-    shotForce: 30, //Force of the shot, should be moved to the weapon attrbiutes
+    shotForce: 50, //Force of the shot, should be moved to the weapon attrbiutes
    
     jumpImpulse: 100, //the ammount of impulse a jump takes
     shieldCapacity: 90,
@@ -31,13 +31,20 @@ var Y2Actor = cc.Sprite.extend({
     isShooting: false,
     shootTimer: 0,
     stabilityCounter: 0,
+    canStartFlight:false,
 
-    init: function(p) {
-        p.addChild(this);
+    ctor: function(){
         this.scheduleUpdate();
+        this.initWithFile("res/character.png", cc.rect(0,0,68,94));
+        cc.TextureCache.getInstance().addImage("res/bullet.png");
     },
 
     update: function(dt) {
+        this.setAnchorPoint(-0.5,0.5);
+        ptm = GameManager.currentScene.layer.ptmRatio;
+        this.setPosition(
+                (this.getBody().GetPosition().x * ptm) - (this.getContentSize().width/2),
+                cc.Director.getInstance().getWinSize().height - (this.getBody().GetPosition().y * ptm) - (this.getContentSize().height/2));
         if(this.state == "flying"){
             this.stabilityCounter += dt;
         }
@@ -45,15 +52,16 @@ var Y2Actor = cc.Sprite.extend({
             this.stabilityCounter = 0;
             this.fall();
         }
-        if(GameManager.keysDown.indexOf(cc.KEY.space) >= 0 
+        if(GameManager.keysDown.indexOf(cc.KEY.w) >= 0 
            && this.getBody().GetLinearVelocity().y ==0
            && this.state == "running"){
            this.jump();
         }
 
         if(GameManager.keysDown.indexOf(cc.KEY.w) >= 0
+           && this.canStartFlight
            && this.getBody().GetLinearVelocity().y != 0
-           && (this.state == "running" || this.state == "falling") ){
+           && (this.state == "running" || this.state == "jumping") ){
             this.fly();
         }
 
@@ -98,6 +106,7 @@ var Y2Actor = cc.Sprite.extend({
     },
 
     jump: function() {
+        this.state = "jumping";
         b2Vec2 = Box2D.Common.Math.b2Vec2;
         body = this.getBody();
         impulse = body.GetMass() * this.jumpImpulse;
@@ -123,7 +132,7 @@ var Y2Actor = cc.Sprite.extend({
     },
 
     fall: function() {
-        this.state = "falling";
+        this.state = "jumping";
         this.getBody().SetLinearDamping(0);
     },
 
@@ -155,7 +164,7 @@ var Y2Actor = cc.Sprite.extend({
         fixDef.filter.categoryBits = GameManager.currentScene.layer.box2dFlags.BULLET;
         fixDef.filter.maskBits = GameManager.currentScene.layer.box2dFlags.ACTOR | GameManager.currentScene.layer.box2dFlags.GROUND ; 
         bodyDef.position.x = this.fixture.GetAABB().GetCenter().x + this.fixture.GetAABB().GetExtents().x + 1;
-        bodyDef.position.y = this.fixture.GetAABB().GetCenter().y - this.fixture.GetAABB().GetExtents().y/2;
+        bodyDef.position.y = this.fixture.GetAABB().GetCenter().y;// - this.fixture.GetAABB().GetExtents().y/2;
 
         crosshair = GameManager.currentScene.layer.crosshair;
         crossPos = new b2Vec2(crosshair.getPosition().x / GameManager.currentScene.layer.ptmRatio,
@@ -168,5 +177,21 @@ var Y2Actor = cc.Sprite.extend({
               new b2Vec2(Math.cos(angle) * impulse,Math.sin(angle) * impulse),
               bullet.GetBody().GetWorldCenter()
               );
+
+        
+        sprite = cc.Sprite.createWithTexture( cc.TextureCache.getInstance().textureForKey("res/bullet.png") );
+        bullet.SetUserData(sprite);
+        sprite.fixture = bullet;
+        GameManager.currentScene.layer.addChild(sprite);
+        sprite.schedule(this.bulletSpriteUpdate, 1/60);
+    },
+
+    bulletSpriteUpdate: function(dt){
+        ptm = GameManager.currentScene.layer.ptmRatio;
+        size = cc.Director.getInstance().getWinSize()
+        this.setPosition(
+            this.fixture.GetBody().GetPosition().x * ptm,
+            size.height - (this.fixture.GetBody().GetPosition().y * ptm)
+                );
     }
 });

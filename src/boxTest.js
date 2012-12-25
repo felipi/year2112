@@ -27,7 +27,7 @@ var Box2DTest = cc.Layer.extend({
     isMouseDown:false,
     crosshair:null,
     world:null,
-    travelSpeed: 10,
+    travelSpeed: 7,
     ptmRatio:30,
 
     init:function () {
@@ -86,6 +86,27 @@ var Box2DTest = cc.Layer.extend({
         //lazyLayer.adjustSizeForCanvas();
 
         this.box2dInit();
+        tc = cc.TextureCache.getInstance();
+        tc.addImage("res/buildings.png"); 
+        tc.addImage("res/sky.png"); 
+        tc.addImage("res/ground.png"); 
+        this.sky = cc.Sprite.createWithTexture( tc.textureForKey("res/sky.png") );
+        this.sky2 = cc.Sprite.createWithTexture( tc.textureForKey("res/sky.png") );
+        this.sky.setAnchorPoint(0,0);
+        this.sky.setPosition(0,0);
+        this.buildings = cc.Sprite.createWithTexture( tc.textureForKey("res/buildings.png") );
+        this.buildings2 = cc.Sprite.createWithTexture( tc.textureForKey("res/buildings.png") );
+        this.buildings.setPosition(0,0);
+        this.ground = cc.Sprite.createWithTexture( tc.textureForKey("res/ground.png") );
+        this.ground.setPosition(0, -30);
+        this.ground2 = cc.Sprite.createWithTexture(tc.textureForKey("res/ground.png") );
+
+        this.addChild(this.sky);
+        this.addChild(this.sky2);
+        this.addChild(this.buildings);
+        this.addChild(this.buildings2);
+        this.addChild(this.ground2);
+        this.addChild(this.ground);
 
         this.crosshair = cc.Sprite.create("res/temp_crosshair.png");
         this.crosshair.setAnchorPoint(cc.p(0.5, 0.5));
@@ -98,26 +119,63 @@ var Box2DTest = cc.Layer.extend({
             y: 2,
             player: true
         });
-        GameManager.player = new Y2Actor;
+        GameManager.player = new Y2Actor();
         GameManager.player.fixture = playerBody;
         GameManager.player.fixture.SetUserData(GameManager.player);
-        GameManager.player.init(this);
+        this.addChild(GameManager.player);
+        //GameManager.player.init(this);
         this.scheduleUpdate();
         return true;
     },
 
     update: function(dt){
+        position = this.ground.getPosition();
+        size = this.ground.getContentSize();
+        this.ground.setAnchorPoint(0,0);
+        this.ground2.setAnchorPoint(0,0);
+        if(position.x + size.width <= 0){
+            this.ground.setPosition(this.ground2.getPosition().x, this.ground2.getPosition().y);
+        }else{
+            this.ground.setPosition(position.x - this.travelSpeed, position.y);
+        }
+        this.ground2.setPosition(position.x + size.width - this.travelSpeed, position.y);
+
+        position = this.sky.getPosition();
+        size = this.sky.getContentSize();
+        this.sky.setAnchorPoint(0,0);
+        this.sky2.setAnchorPoint(0,0);
+        if(position.x + size.width <= 0){
+            this.sky.setPosition(this.sky2.getPosition().x, this.sky2.getPosition().y);
+        }else{
+            this.sky.setPosition(position.x - (this.travelSpeed/5), position.y);
+        }
+        this.sky2.setPosition(position.x + size.width - (this.travelSpeed/5), position.y);
+
+        position = this.buildings.getPosition();
+        size = this.buildings.getContentSize();
+        this.buildings.setAnchorPoint(0,0);
+        this.buildings2.setAnchorPoint(0,0);
+        if(position.x + size.width <= 0){
+            this.buildings.setPosition(this.buildings2.getPosition().x, this.buildings2.getPosition().y);
+        }else{
+            this.buildings.setPosition(position.x - (this.travelSpeed/2), position.y);
+        }
+        this.buildings2.setPosition(position.x + size.width - (this.travelSpeed/2), position.y);
     },
     
     onKeyUp: function(key){
-        GameManager.keysDown.splice(
+        if(key == cc.KEY.w && GameManager.player.state == "jumping"){
+            GameManager.player.canStartFlight = true;
+        }
+            GameManager.keysDown.splice(
                 GameManager.keysDown.indexOf(key),
                 1);
     },
 
     onKeyDown:function(key){
-        if(GameManager.keysDown.indexOf(key) < 0)
+        if(GameManager.keysDown.indexOf(key) < 0){
             GameManager.keysDown.push(key);
+        }
     },
 
     onTouchesEnded:function(pTouch, pEvent){
@@ -166,8 +224,9 @@ var Box2DTest = cc.Layer.extend({
            categoryA == GameManager.currentScene.layer.box2dFlags.ACTOR){
                if(categoryB == GameManager.currentScene.layer.box2dFlags.GROUND){
                 actor = contact.GetFixtureA().GetUserData();
-                if(actor.state == "falling")
-                   actor.state = "running"
+                if(actor.state == "jumping")
+                   actor.state = "running";
+                   actor.canStartFlight = false;
                }
         }
      }
