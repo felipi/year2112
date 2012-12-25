@@ -32,8 +32,8 @@ var Y2Actor = cc.Sprite.extend({
     shootTimer: 0,
     stabilityCounter: 0,
     canStartFlight:false,
-    runningSpeed:30,
-    flyingSpeed:7,
+    runningSpeed:7,
+    flyingSpeed:30,
 
     ctor: function(){
         this.scheduleUpdate();
