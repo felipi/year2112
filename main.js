@@ -24,6 +24,8 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
  ****************************************************************************/
+var GameManager = null;
+
 var cocos2dApp = cc.Application.extend({
     config:document['ccConfig'],
     ctor:function (scene) {
@@ -55,7 +57,8 @@ var cocos2dApp = cc.Application.extend({
         director.setAnimationInterval(1.0 / this.config['frameRate']);
 
         // create a scene. it's an autorelease object
-
+        GameManager = new Y2Manager;
+        GameManager.init();
         // run
         director.runWithScene(new this.startScene());
 

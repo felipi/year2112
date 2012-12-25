@@ -23,16 +23,11 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
  ****************************************************************************/
-
 var Box2DTest = cc.Layer.extend({
     isMouseDown:false,
-    helloImg:null,
-    helloLabel:null,
-    circle:null,
-    sprite:null,
+    crosshair:null,
     world:null,
     ptmRatio:30,
-    player:null,
 
     init:function () {
         var selfPointer = this;
@@ -40,6 +35,7 @@ var Box2DTest = cc.Layer.extend({
         //////////////////////////////
         // 1. super init first
         this._super();
+        this.setMouseEnabled(true);
         this.setTouchEnabled(true);
         this.setKeyboardEnabled(true);
         //cc.adjustSizeForWindow();
@@ -51,6 +47,7 @@ var Box2DTest = cc.Layer.extend({
         var size = cc.Director.getInstance().getWinSize();
 
         // add a "close" icon to exit the progress. it's an autorelease object
+        /*
         var closeItem = cc.MenuItemImage.create(
             "res/CloseNormal.png",
             "res/CloseSelected.png",
@@ -63,6 +60,7 @@ var Box2DTest = cc.Layer.extend({
         menu.setPosition(cc.PointZero());
         this.addChild(menu, 1);
         closeItem.setPosition(cc.p(size.width - 20, 20));
+        // */
 
         /////////////////////////////
         // 3. add your codes below...
@@ -85,37 +83,58 @@ var Box2DTest = cc.Layer.extend({
         var debugLayer = document.getElementById("debugDraw");
         //lazyLayer.addChild(this.sprite, 0);
         //lazyLayer.adjustSizeForCanvas();
-        window.addEventListener("resize", function (event) {
-            //lazyLayer.adjustSizeForCanvas();
-        });
 
         this.box2dInit();
-        
-        this.player = this.addPhyisicsObject({
+
+        this.crosshair = cc.Sprite.create("res/temp_crosshair.png");
+        this.crosshair.setAnchorPoint(cc.p(0.5, 0.5));
+        this.crosshair.setPosition(cc.p(size.width, size.height/2));
+        this.addChild(this.crosshair);
+
+        playerBody = this.addPhyisicsObject({
             height: 1.63,
             x: 2,
             y: 2
         });
-
-        console.log(this.player);
+        GameManager.player = new Y2Actor();
+        GameManager.player.fixture = playerBody;
         this.schedule(this.update, 1/60);
         return true;
     },
 
     update: function(dt){
+        if(GameManager.keysDown.indexOf(cc.KEY.w) >= 0 
+           && GameManager.player.getBody().GetLinearVelocity().y ==0
+           && GameManager.player.state == "running"){
+            GameManager.player.jump();
+        }
+        
+    },
+    
+    onKeyUp: function(key){
+        GameManager.keysDown.splice(
+                GameManager.keysDown.indexOf(key),
+                1);
     },
 
-    onKeyUp:function(keys){
-    b2Vec2 = Box2D.Common.Math.b2Vec2
-            if(keys == cc.KEY.w){
-                body = this.player.m_body;
-                impulse = body.GetMass() * 60;
-                console.log(impulse);
-                body.ApplyImpulse( new b2Vec2(0,impulse), body.GetWorldCenter() ); 
-            }   
+    onKeyDown:function(key){
+        if(GameManager.keysDown.indexOf(key) < 0)
+            GameManager.keysDown.push(key);
     },
 
     onTouchesEnded:function(pTouch, pEvent){
+    },
+
+    onTouchesMoved: function(pTouch, pEvent){
+        if(this.crosshair === undefined) return;
+        touch = pTouch[0].getLocation();
+            this.crosshair.setPosition(touch.x, touch.y);
+    },
+
+    onMouseMoved: function(evt){
+        if(this.crosshair === undefined) return;
+        touch = evt.getLocation();
+            this.crosshair.setPosition(touch.x, touch.y);
     },
 
     box2dInit:function()  {
@@ -130,16 +149,26 @@ var Box2DTest = cc.Layer.extend({
         ,   b2PolygonShape = Box2D.Collision.Shapes.b2PolygonShape
         ,   b2CircleShape = Box2D.Collision.Shapes.b2CircleShape
         ,   b2DebugDraw = Box2D.Dynamics.b2DebugDraw
+        ,   b2Listener = Box2D.Dynamics.b2ContactListener
         ;
-     
+
+     var playerListener = new b2Listener;
+     playerListener.BeginContact = function(contact){
+        contact.GetFixtureA().GetBody().SetLinearDamping(5);   
+     }
+     playerListener.EndContact = function(contact){
+        contact.GetFixtureA().GetBody().SetLinearDamping(0);
+     }
+
      world = new b2World(
            new b2Vec2(0, 10)    //gravity
         ,  true                 //allow sleep
      );
+     world.SetContactListener(playerListener);
      this.world = world; 
      var fixDef = new b2FixtureDef;
      fixDef.density = 1.0;
-     fixDef.friction = 0.5;
+     fixDef.friction = 1;
      fixDef.restitution = 0;
      
      var bodyDef = new b2BodyDef;
@@ -214,5 +243,6 @@ var Box2DScene = cc.Scene.extend({
         var layer = new Box2DTest();
         this.addChild(layer);
         layer.init();
+        GameManager.currentScene = this;
     }
 });

@@ -38,6 +38,8 @@
         appFiles:[
             'libs/box2d/box2d.js',
             'src/resource.js',
+            'src/y2Manager.js',
+            'src/y2Actor.js',
             'src/myApp.js',
             'src/boxTest.js'
         ]
