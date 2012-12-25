@@ -57,6 +57,7 @@ var cocos2dApp = cc.Application.extend({
         director.setAnimationInterval(1.0 / this.config['frameRate']);
 
         // create a scene. it's an autorelease object
+        createjs.Ticker.addListener(window);
         GameManager = new Y2Manager;
         GameManager.init();
         // run

@@ -32,6 +32,8 @@ var Y2Actor = cc.Sprite.extend({
     shootTimer: 0,
     stabilityCounter: 0,
     canStartFlight:false,
+    runningSpeed:30,
+    flyingSpeed:7,
 
     ctor: function(){
         this.scheduleUpdate();
@@ -117,6 +119,8 @@ var Y2Actor = cc.Sprite.extend({
     },
 
     fly: function(){
+        speed = this.flyingSpeed;
+        createjs.Tween.get(GameManager.currentScene.layer, {paused:false}).to({travelSpeed:speed}, 1000, createjs.Ease.circIn);
         this.state = "flying";
         this.getBody().SetLinearDamping(5*this.control);
     },
@@ -129,6 +133,13 @@ var Y2Actor = cc.Sprite.extend({
               );
         this.maneuvering++;
         this.stabilityCounter = 0;
+    },
+
+    run: function() {
+        actor.state = "running";
+        actor.canStartFlight = false;
+        speed = this.runningSpeed;
+        createjs.Tween.get(GameManager.currentScene.layer).to({travelSpeed:speed}, 300, createjs.Ease.circIn);
     },
 
     fall: function() {

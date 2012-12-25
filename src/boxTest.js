@@ -27,7 +27,7 @@ var Box2DTest = cc.Layer.extend({
     isMouseDown:false,
     crosshair:null,
     world:null,
-    travelSpeed: 7,
+    travelSpeed: 30,
     ptmRatio:30,
 
     init:function () {
@@ -123,7 +123,7 @@ var Box2DTest = cc.Layer.extend({
         GameManager.player.fixture = playerBody;
         GameManager.player.fixture.SetUserData(GameManager.player);
         this.addChild(GameManager.player);
-        //GameManager.player.init(this);
+        this.travelSpeed = GameManager.player.runningSpeed;
         this.scheduleUpdate();
         return true;
     },
@@ -225,8 +225,7 @@ var Box2DTest = cc.Layer.extend({
                if(categoryB == GameManager.currentScene.layer.box2dFlags.GROUND){
                 actor = contact.GetFixtureA().GetUserData();
                 if(actor.state == "jumping")
-                   actor.state = "running";
-                   actor.canStartFlight = false;
+                    actor.run();
                }
         }
      }
