@@ -94,7 +94,8 @@ var Box2DTest = cc.Layer.extend({
         playerBody = this.addPhyisicsObject({
             height: 1.63,
             x: 2,
-            y: 2
+            y: 2,
+            player: true
         });
         GameManager.player = new Y2Actor;
         GameManager.player.fixture = playerBody;
@@ -183,8 +184,9 @@ var Box2DTest = cc.Layer.extend({
      bodyDef.position.y = size.height/this.ptmRatio;
      fixDef.shape = new b2PolygonShape;
      fixDef.shape.SetAsBox(size.width/this.ptmRatio, 0.5);
-     fixDef.filter.categoryBits = this.box2dFlags.BOUNDS;
+     fixDef.filter.categoryBits = this.box2dFlags.GROUND;
      world.CreateBody(bodyDef).CreateFixture(fixDef);
+     fixDef.filter.categoryBits = this.box2dFlags.BOUNDS;
      bodyDef.position.y = 0.25;
      world.CreateBody(bodyDef).CreateFixture(fixDef);   
      //setup debug draw
@@ -225,7 +227,11 @@ var Box2DTest = cc.Layer.extend({
             parameters.height/2,
             parameters.height
         );
-        fixDef.filter.categoryBits = this.box2dFlags.ACTOR;
+        if(parameters.player != undefined){
+            fixDef.filter.categoryBits = this.box2dFlags.PLAYER;
+        }else{
+            fixDef.filter.categoryBits = this.box2dFlags.ACTOR;
+        }
         bodyDef.fixedRotation = true;
         bodyDef.position.x = parameters.x;
         bodyDef.position.y = (cc.Director.getInstance().getWinSize().height/this.ptmRatio) - parameters.y;
@@ -244,8 +250,10 @@ var Box2DTest = cc.Layer.extend({
 
     box2dFlags: {
         BOUNDS: 0x0001,
+        GROUND: 0x0010,
         ACTOR: 0x0002,
-        BULLET: 0x0003
+        BULLET: 0x0003,
+        PLAYER: 0x0004
     } 
 
 });

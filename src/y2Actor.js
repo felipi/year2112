@@ -22,6 +22,7 @@ var Y2Actor = cc.Sprite.extend({
     criticalMeleeDamage: 4, //Percent of critical damage for melee attacks
     chargeShot: 0, //Overall level of charge shot skill
     chargeSpeed: 1, //Speed of charging weapons
+    shotForce: 65, //Force of the shot, should be moved to the weapon attrbiutes
    
     jumpImpulse: 100, //the ammount of impulse a jump takes
     shieldCapacity: 90,
@@ -93,7 +94,7 @@ var Y2Actor = cc.Sprite.extend({
         fixDef.restitution = 0.4;
         fixDef.shape.SetAsBox(0.05,0.05);
         fixDef.filter.categoryBits = GameManager.currentScene.layer.box2dFlags.BULLET;
-        fixDef.filter.maskBits = 0x0002;
+        fixDef.filter.maskBits = GameManager.currentScene.layer.box2dFlags.ACTOR | GameManager.currentScene.layer.box2dFlags.GROUND ; 
         bodyDef.position.x = this.fixture.GetAABB().GetCenter().x + this.fixture.GetAABB().GetExtents().x + 1;
         bodyDef.position.y = this.fixture.GetAABB().GetCenter().y - this.fixture.GetAABB().GetExtents().y/2;
 
@@ -102,7 +103,7 @@ var Y2Actor = cc.Sprite.extend({
                               (cc.Director.getInstance().getWinSize().height - crosshair.getPosition().y) / GameManager.currentScene.layer.ptmRatio);
         bullet = GameManager.world.CreateBody(bodyDef).CreateFixture(fixDef);
         angle = Math.atan2(crossPos.y - bullet.GetAABB().GetCenter().y, crossPos.x - bullet.GetAABB().GetCenter().x);// * (180/Math.PI);
-        impulse = bullet.GetBody().GetMass() * 30;
+        impulse = bullet.GetBody().GetMass() * this.shotForce;
         bullet.GetBody().ApplyImpulse(
               new b2Vec2(Math.cos(angle) * impulse,Math.sin(angle) * impulse),
               bullet.GetBody().GetWorldCenter()
