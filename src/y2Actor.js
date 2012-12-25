@@ -163,7 +163,7 @@ var Y2Actor = cc.Sprite.extend({
         fixDef.shape.SetAsBox(0.05,0.05);
         fixDef.filter.categoryBits = GameManager.currentScene.layer.box2dFlags.BULLET;
         fixDef.filter.maskBits = GameManager.currentScene.layer.box2dFlags.ACTOR | GameManager.currentScene.layer.box2dFlags.GROUND ; 
-        bodyDef.position.x = this.fixture.GetAABB().GetCenter().x + this.fixture.GetAABB().GetExtents().x + 1;
+        bodyDef.position.x = this.fixture.GetAABB().GetCenter().x + this.fixture.GetAABB().GetExtents().x ;
         bodyDef.position.y = this.fixture.GetAABB().GetCenter().y;// - this.fixture.GetAABB().GetExtents().y/2;
 
         crosshair = GameManager.currentScene.layer.crosshair;
@@ -187,6 +187,14 @@ var Y2Actor = cc.Sprite.extend({
     },
 
     bulletSpriteUpdate: function(dt){
+        if (this.life == undefined) this.life = 1.5;
+            this.life -= dt;
+        if(this.life <= 0) {
+            this.unscheduleAllCallbacks();
+            this.getParent().removeChild(this);
+            GameManager.world.DestroyBody(this.fixture.GetBody());
+            return;
+        }
         ptm = GameManager.currentScene.layer.ptmRatio;
         size = cc.Director.getInstance().getWinSize()
         this.setPosition(
