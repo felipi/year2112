@@ -13,7 +13,7 @@ var Y2Actor = cc.Sprite.extend({
     perception: 0, //How slower the world seems to this actor
     grazingLevel: 0, //The overall level of grazing skill of this actor
     grazing: 0, //Temporary grazing level, drains when not grazing
-    fireRate: 1, //Rate of fire for all Bullet Guns
+    fireRate: 8, //Rate of fire for all Bullet Guns
     bulletsShot: 0, //How many bullets this actor has shot
     accuracy: 15, //Weapon accuracy
     criticalShotChance: 0, //Critical chance for guns
@@ -27,8 +27,31 @@ var Y2Actor = cc.Sprite.extend({
     shieldCapacity: 90,
     shield: 100,
     fixture: null, //this is the physics fixture
+    isShooting: false,
+    shootTimer: 0,
 
-    ctor: function() {
+    init: function(p) {
+        p.addChild(this);
+        this.scheduleUpdate();
+    },
+
+    update: function(dt) {
+        if(GameManager.keysDown.indexOf(cc.KEY.w) >= 0 
+           && this.getBody().GetLinearVelocity().y ==0
+           && this.state == "running"){
+           this.jump();
+        }
+
+        if(GameManager.isMouseDown && this.shootTimer <= 0){
+            this.shoot();
+        }
+
+        if(this.isShooting)
+            this.shootTimer += dt;
+        if(this.shootTimer >= (10 - this.fireRate)/10 ){
+            this.shootTimer = 0;
+            isShooting = false;
+        }
     },
 
     getBody: function() {
@@ -42,6 +65,47 @@ var Y2Actor = cc.Sprite.extend({
         body.ApplyImpulse(
               new b2Vec2(0, impulse),
               body.GetWorldCenter()
+              );
+    },
+
+    shoot: function() {
+       this.isShooting = true;
+       console.log(" BANG!"); 
+       
+        var   b2Vec2 = Box2D.Common.Math.b2Vec2
+            ,   b2BodyDef = Box2D.Dynamics.b2BodyDef
+            ,   b2Body = Box2D.Dynamics.b2Body
+            ,   b2FixtureDef = Box2D.Dynamics.b2FixtureDef
+            ,   b2Fixture = Box2D.Dynamics.b2Fixture
+            ,   b2World = Box2D.Dynamics.b2World
+            ,   b2MassData = Box2D.Collision.Shapes.b2MassData
+            ,   b2PolygonShape = Box2D.Collision.Shapes.b2PolygonShape
+            ,   b2CircleShape = Box2D.Collision.Shapes.b2CircleShape
+            ,   b2DebugDraw = Box2D.Dynamics.b2DebugDraw
+            ,   b2Transform = Box2D.Common.Math.b2Transform
+            ;
+        var fixDef = new b2FixtureDef;
+        var bodyDef = new b2BodyDef;
+
+        bodyDef.type = b2Body.b2_dynamicBody;
+        bodyDef.bullet = true;
+        fixDef.shape = new b2PolygonShape;
+        fixDef.density = 1.0;
+        fixDef.restitution = 0.4;
+        fixDef.shape.SetAsBox(0.05,0.05);
+        bodyDef.position.x = this.fixture.GetAABB().GetCenter().x + this.fixture.GetAABB().GetExtents().x + 1;
+        bodyDef.position.y = this.fixture.GetAABB().GetCenter().y - this.fixture.GetAABB().GetExtents().y/2;
+
+        crosshair = GameManager.currentScene.layer.crosshair;
+        crossPos = new b2Vec2(crosshair.getPosition().x / GameManager.currentScene.layer.ptmRatio,
+                              (cc.Director.getInstance().getWinSize().height - crosshair.getPosition().y) / GameManager.currentScene.layer.ptmRatio);
+        console.log(crossPos);
+        bullet = GameManager.world.CreateBody(bodyDef).CreateFixture(fixDef);
+        angle = Math.atan2(crossPos.y - bullet.GetAABB().GetCenter().y, crossPos.x - bullet.GetAABB().GetCenter().x);// * (180/Math.PI);
+        impulse = bullet.GetBody().GetMass() * 30;
+        bullet.GetBody().ApplyImpulse(
+              new b2Vec2(Math.cos(angle) * impulse,Math.sin(angle) * impulse),
+              bullet.GetBody().GetWorldCenter()
               );
     }
 });

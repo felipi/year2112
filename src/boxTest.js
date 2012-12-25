@@ -96,19 +96,14 @@ var Box2DTest = cc.Layer.extend({
             x: 2,
             y: 2
         });
-        GameManager.player = new Y2Actor();
+        GameManager.player = new Y2Actor;
         GameManager.player.fixture = playerBody;
-        this.schedule(this.update, 1/60);
+        GameManager.player.init(this);
+        this.scheduleUpdate();
         return true;
     },
 
     update: function(dt){
-        if(GameManager.keysDown.indexOf(cc.KEY.w) >= 0 
-           && GameManager.player.getBody().GetLinearVelocity().y ==0
-           && GameManager.player.state == "running"){
-            GameManager.player.jump();
-        }
-        
     },
     
     onKeyUp: function(key){
@@ -129,6 +124,14 @@ var Box2DTest = cc.Layer.extend({
         if(this.crosshair === undefined) return;
         touch = pTouch[0].getLocation();
             this.crosshair.setPosition(touch.x, touch.y);
+    },
+
+    onMouseDown: function(evt){
+        GameManager.isMouseDown = true;
+    },
+
+    onMouseUp: function(evt){
+        GameManager.isMouseDown = false;
     },
 
     onMouseMoved: function(evt){
@@ -192,7 +195,8 @@ var Box2DTest = cc.Layer.extend({
         debugDraw.SetLineThickness(1.0);
         debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit);
         world.SetDebugDraw(debugDraw);
-     
+    
+     GameManager.world = world; 
      window.setInterval(this.box2dStep, 1000 / 60);
     },
     
@@ -238,11 +242,13 @@ var Box2DTest = cc.Layer.extend({
 });
 
 var Box2DScene = cc.Scene.extend({
+    layer: null,
+
     onEnter:function () {
         this._super();
-        var layer = new Box2DTest();
-        this.addChild(layer);
-        layer.init();
+        this.layer = new Box2DTest();
+        this.addChild(this.layer);
+        this.layer.init();
         GameManager.currentScene = this;
     }
 });
