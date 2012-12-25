@@ -183,6 +183,7 @@ var Box2DTest = cc.Layer.extend({
      bodyDef.position.y = size.height/this.ptmRatio;
      fixDef.shape = new b2PolygonShape;
      fixDef.shape.SetAsBox(size.width/this.ptmRatio, 0.5);
+     fixDef.filter.categoryBits = this.box2dFlags.BOUNDS;
      world.CreateBody(bodyDef).CreateFixture(fixDef);
      bodyDef.position.y = 0.25;
      world.CreateBody(bodyDef).CreateFixture(fixDef);   
@@ -224,6 +225,8 @@ var Box2DTest = cc.Layer.extend({
             parameters.height/2,
             parameters.height
         );
+        fixDef.filter.categoryBits = this.box2dFlags.ACTOR;
+        bodyDef.fixedRotation = true;
         bodyDef.position.x = parameters.x;
         bodyDef.position.y = (cc.Director.getInstance().getWinSize().height/this.ptmRatio) - parameters.y;
         return this.world.CreateBody(bodyDef).CreateFixture(fixDef); 
@@ -237,6 +240,12 @@ var Box2DTest = cc.Layer.extend({
         );
         world.DrawDebugData();
         world.ClearForces();
+    },
+
+    box2dFlags: {
+        BOUNDS: 0x0001,
+        ACTOR: 0x0002,
+        BULLET: 0x0003
     } 
 
 });

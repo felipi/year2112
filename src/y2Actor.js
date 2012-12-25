@@ -70,7 +70,6 @@ var Y2Actor = cc.Sprite.extend({
 
     shoot: function() {
        this.isShooting = true;
-       console.log(" BANG!"); 
        
         var   b2Vec2 = Box2D.Common.Math.b2Vec2
             ,   b2BodyDef = Box2D.Dynamics.b2BodyDef
@@ -93,13 +92,14 @@ var Y2Actor = cc.Sprite.extend({
         fixDef.density = 1.0;
         fixDef.restitution = 0.4;
         fixDef.shape.SetAsBox(0.05,0.05);
+        fixDef.filter.categoryBits = GameManager.currentScene.layer.box2dFlags.BULLET;
+        fixDef.filter.maskBits = 0x0002;
         bodyDef.position.x = this.fixture.GetAABB().GetCenter().x + this.fixture.GetAABB().GetExtents().x + 1;
         bodyDef.position.y = this.fixture.GetAABB().GetCenter().y - this.fixture.GetAABB().GetExtents().y/2;
 
         crosshair = GameManager.currentScene.layer.crosshair;
         crossPos = new b2Vec2(crosshair.getPosition().x / GameManager.currentScene.layer.ptmRatio,
                               (cc.Director.getInstance().getWinSize().height - crosshair.getPosition().y) / GameManager.currentScene.layer.ptmRatio);
-        console.log(crossPos);
         bullet = GameManager.world.CreateBody(bodyDef).CreateFixture(fixDef);
         angle = Math.atan2(crossPos.y - bullet.GetAABB().GetCenter().y, crossPos.x - bullet.GetAABB().GetCenter().x);// * (180/Math.PI);
         impulse = bullet.GetBody().GetMass() * 30;
