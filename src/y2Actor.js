@@ -13,16 +13,16 @@ var Y2Actor = cc.Sprite.extend({
     perception: 0, //How slower the world seems to this actor
     grazingLevel: 0, //The overall level of grazing skill of this actor
     grazing: 0, //Temporary grazing level, drains when not grazing
-    fireRate: 8, //Rate of fire for all Bullet Guns
+    fireRate: 5, //Rate of fire for all Bullet Guns
     bulletsShot: 0, //How many bullets this actor has shot
-    accuracy: 15, //Weapon accuracy
+    accuracy: 50, //Weapon accuracy
     criticalShotChance: 0, //Critical chance for guns
     criticalShotDamage: 2, //Percent of critical damage for guns
     criticalMeleeChance: 0, //Critical chance for melee attacks
     criticalMeleeDamage: 4, //Percent of critical damage for melee attacks
     chargeShot: 0, //Overall level of charge shot skill
     chargeSpeed: 1, //Speed of charging weapons
-    shotForce: 65, //Force of the shot, should be moved to the weapon attrbiutes
+    shotForce: 30, //Force of the shot, should be moved to the weapon attrbiutes
    
     jumpImpulse: 100, //the ammount of impulse a jump takes
     shieldCapacity: 90,
@@ -30,6 +30,7 @@ var Y2Actor = cc.Sprite.extend({
     fixture: null, //this is the physics fixture
     isShooting: false,
     shootTimer: 0,
+    stabilityCounter: 0,
 
     init: function(p) {
         p.addChild(this);
@@ -37,10 +38,40 @@ var Y2Actor = cc.Sprite.extend({
     },
 
     update: function(dt) {
-        if(GameManager.keysDown.indexOf(cc.KEY.w) >= 0 
+        if(this.state == "flying"){
+            this.stabilityCounter += dt;
+        }
+        if(this.stabilityCounter >= (this.stability+ 0.1)* 0.85){
+            this.stabilityCounter = 0;
+            this.fall();
+        }
+        if(GameManager.keysDown.indexOf(cc.KEY.space) >= 0 
            && this.getBody().GetLinearVelocity().y ==0
            && this.state == "running"){
            this.jump();
+        }
+
+        if(GameManager.keysDown.indexOf(cc.KEY.w) >= 0
+           && this.getBody().GetLinearVelocity().y != 0
+           && (this.state == "running" || this.state == "falling") ){
+            this.fly();
+        }
+
+        if(GameManager.keysDown.indexOf(cc.KEY.w) >= 0
+           && this.state == "flying"){
+           this.maneuver(0,-1); 
+        }
+        if(GameManager.keysDown.indexOf(cc.KEY.s) >= 0
+           && this.state == "flying"){
+           this.maneuver(0,1); 
+        }
+        if(GameManager.keysDown.indexOf(cc.KEY.a) >= 0
+           && this.state == "flying"){
+           this.maneuver(-1,0); 
+        }
+        if(GameManager.keysDown.indexOf(cc.KEY.d) >= 0
+           && this.state == "flying"){
+           this.maneuver(1,0); 
         }
 
         if(GameManager.isMouseDown && this.shootTimer <= 0){
@@ -53,6 +84,13 @@ var Y2Actor = cc.Sprite.extend({
             this.shootTimer = 0;
             isShooting = false;
         }
+
+    },
+
+    counterForces: function() {
+        b2Vec2 = Box2D.Common.Math.b2Vec2;
+        counter = new b2Vec2(-GameManager.world.GetGravity().x * this.getBody().GetMass(), -GameManager.world.GetGravity().y * this.getBody().GetMass());
+        this.getBody().ApplyForce(counter, this.getBody().GetWorldCenter() ) 
     },
 
     getBody: function() {
@@ -67,6 +105,26 @@ var Y2Actor = cc.Sprite.extend({
               new b2Vec2(0, impulse),
               body.GetWorldCenter()
               );
+    },
+
+    fly: function(){
+        this.state = "flying";
+        this.getBody().SetLinearDamping(5*this.control);
+    },
+
+    maneuver: function(x,y){
+        b2Vec2 = Box2D.Common.Math.b2Vec2;
+        this.getBody().ApplyForce(
+                new b2Vec2(x * (this.jumpImpulse / this.control), y * (this.jumpImpulse / this.control)) ,
+                this.getBody().GetPosition()
+              );
+        this.maneuvering++;
+        this.stabilityCounter = 0;
+    },
+
+    fall: function() {
+        this.state = "falling";
+        this.getBody().SetLinearDamping(0);
     },
 
     shoot: function() {
@@ -91,6 +149,7 @@ var Y2Actor = cc.Sprite.extend({
         bodyDef.bullet = true;
         fixDef.shape = new b2PolygonShape;
         fixDef.density = 1.0;
+        fixDef.friction = 0;
         fixDef.restitution = 0.4;
         fixDef.shape.SetAsBox(0.05,0.05);
         fixDef.filter.categoryBits = GameManager.currentScene.layer.box2dFlags.BULLET;
@@ -103,6 +162,7 @@ var Y2Actor = cc.Sprite.extend({
                               (cc.Director.getInstance().getWinSize().height - crosshair.getPosition().y) / GameManager.currentScene.layer.ptmRatio);
         bullet = GameManager.world.CreateBody(bodyDef).CreateFixture(fixDef);
         angle = Math.atan2(crossPos.y - bullet.GetAABB().GetCenter().y, crossPos.x - bullet.GetAABB().GetCenter().x);// * (180/Math.PI);
+        angle += (Math.random() * (100 - this.accuracy))/100;
         impulse = bullet.GetBody().GetMass() * this.shotForce;
         bullet.GetBody().ApplyImpulse(
               new b2Vec2(Math.cos(angle) * impulse,Math.sin(angle) * impulse),

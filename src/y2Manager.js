@@ -3,7 +3,7 @@ var Y2Manager = cc.Class.extend({
     keysDown:[],
     isMouseDown:false,
     player:null,
-    wordl: null,
+    world: null,
    
     init: function(){
         this.keysDown = [];

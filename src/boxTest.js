@@ -27,6 +27,7 @@ var Box2DTest = cc.Layer.extend({
     isMouseDown:false,
     crosshair:null,
     world:null,
+    travelSpeed: 10,
     ptmRatio:30,
 
     init:function () {
@@ -93,12 +94,13 @@ var Box2DTest = cc.Layer.extend({
 
         playerBody = this.addPhyisicsObject({
             height: 1.63,
-            x: 2,
+            x: 0.3,
             y: 2,
             player: true
         });
         GameManager.player = new Y2Actor;
         GameManager.player.fixture = playerBody;
+        GameManager.player.fixture.SetUserData(GameManager.player);
         GameManager.player.init(this);
         this.scheduleUpdate();
         return true;
@@ -158,22 +160,31 @@ var Box2DTest = cc.Layer.extend({
 
      var playerListener = new b2Listener;
      playerListener.BeginContact = function(contact){
-        contact.GetFixtureA().GetBody().SetLinearDamping(5);   
+        categoryA = contact.GetFixtureA().GetFilterData().categoryBits;  
+        categoryB = contact.GetFixtureB().GetFilterData().categoryBits;  
+        if(categoryA == GameManager.currentScene.layer.box2dFlags.PLAYER || 
+           categoryA == GameManager.currentScene.layer.box2dFlags.ACTOR){
+               if(categoryB == GameManager.currentScene.layer.box2dFlags.GROUND){
+                actor = contact.GetFixtureA().GetUserData();
+                if(actor.state == "falling")
+                   actor.state = "running"
+               }
+        }
      }
      playerListener.EndContact = function(contact){
-        contact.GetFixtureA().GetBody().SetLinearDamping(0);
+        //contact.GetFixtureA().GetBody().SetLinearDamping(0);
      }
 
      world = new b2World(
-           new b2Vec2(0, 10)    //gravity
+           new b2Vec2(-this.travelSpeed, 10)    //gravity
         ,  true                 //allow sleep
      );
      world.SetContactListener(playerListener);
      this.world = world; 
      var fixDef = new b2FixtureDef;
      fixDef.density = 1.0;
-     fixDef.friction = 1;
-     fixDef.restitution = 0;
+     fixDef.friction = 0;
+     fixDef.restitution = 0.1;
      
      var bodyDef = new b2BodyDef;
      
@@ -189,6 +200,13 @@ var Box2DTest = cc.Layer.extend({
      fixDef.filter.categoryBits = this.box2dFlags.BOUNDS;
      bodyDef.position.y = 0.25;
      world.CreateBody(bodyDef).CreateFixture(fixDef);   
+     fixDef.shape.SetAsBox(0.3, size.height/this.ptmRatio);
+     fixDef.friction = 0;
+     fixDef.density = 0;
+     world.CreateBody(bodyDef).CreateFixture(fixDef);
+     bodyDef.position.x = size.width/this.ptmRatio - 0.3;
+     world.CreateBody(bodyDef).CreateFixture(fixDef);
+     
      //setup debug draw
      var debugDraw = new b2DebugDraw();
         //debugDraw.SetSprite(displayList.debug.getContext("2d"));
@@ -239,6 +257,9 @@ var Box2DTest = cc.Layer.extend({
     },
 
     box2dStep:function() {
+        if(GameManager.player.state == "flying"){
+            GameManager.player.counterForces();
+        }
         world.Step(
            1 / 60   //frame-rate
            ,  10       //velocity iterations
