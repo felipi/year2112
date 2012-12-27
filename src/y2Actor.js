@@ -19,7 +19,10 @@ var Y2Actor = Y2BaseActor.extend({
     criticalMeleeDamage: 4, //Percent of critical damage for melee attacks
     chargeShot: 0, //Overall level of charge shot skill
     chargeSpeed: 1, //Speed of charging weapons
-    shotForce: 50, //Force of the shot, should be moved to the weapon attrbiutes
+    autoFire: true,
+    equip: {
+        weapon: null,
+    },
    
     jumpImpulse: 100, //the ammount of impulse a jump takes
     stabilityCounter: 0,
@@ -29,6 +32,27 @@ var Y2Actor = Y2BaseActor.extend({
         this.scheduleUpdate();
         this.initWithFile("res/character.png", cc.rect(0,0,68,94));
         cc.TextureCache.getInstance().addImage("res/bullet.png");
+    },
+
+    fireRate: function() {
+        if(this.equip.weapon == null)
+            return 0;
+        else
+            return this.equip.weapon.fireRate;
+    },
+
+    shotForce: function() {
+        if(this.equip.weapon == null)
+            return 0;
+        else
+            return this.equip.weapon.shotForce;
+    },
+
+    accuracy: function() {
+        if(this.equip.weapon == null)
+            return 0;
+        else
+            return this.equip.weapon.accuracy;
     },
 
     update: function(dt) {
@@ -74,13 +98,13 @@ var Y2Actor = Y2BaseActor.extend({
            this.maneuver(1,0); 
         }
 
-        if(GameManager.isMouseDown && this.shootTimer <= 0){
+        if((GameManager.isMouseDown || this.autoFire) && this.shootTimer <= 0 && this.fireRate() > 0){
             this.shoot();
         }
 
         if(this.isShooting)
             this.shootTimer += dt;
-        if(this.shootTimer >= (10 - this.fireRate)/10 ){
+        if(this.shootTimer >= (10 - this.fireRate())/10){
             this.shootTimer = 0;
             isShooting = false;
         }
@@ -167,16 +191,16 @@ var Y2Actor = Y2BaseActor.extend({
         bodyDef.position.x = this.fixture.GetAABB().GetCenter().x + this.fixture.GetAABB().GetExtents().x ;
         bodyDef.position.y = this.fixture.GetAABB().GetCenter().y;// - this.fixture.GetAABB().GetExtents().y/2;
 
-        crosshair = GameManager.currentScene.layer.crosshair;
-        crossPos = new b2Vec2(crosshair.getPosition().x / GameManager.currentScene.layer.ptmRatio,
-                              (cc.Director.getInstance().getWinSize().height - crosshair.getPosition().y) / GameManager.currentScene.layer.ptmRatio);
-        angle = Math.atan2(crossPos.y - bodyDef.position.y, crossPos.x - bodyDef.position.x);
+        //crosshair = GameManager.currentScene.layer.crosshair;
+        //crossPos = new b2Vec2(crosshair.getPosition().x / GameManager.currentScene.layer.ptmRatio,
+        //                      (cc.Director.getInstance().getWinSize().height - crosshair.getPosition().y) / GameManager.currentScene.layer.ptmRatio);
+        //angle = Math.atan2(crossPos.y - bodyDef.position.y, crossPos.x - bodyDef.position.x);
+        angle = 0;// SHOOT STRAIGHT!
+        deviation = ((Math.random()-0.5) * (100 - this.accuracy()))/100;
+        angle += deviation;
         bodyDef.angle = angle;
         bullet = GameManager.world.CreateBody(bodyDef).CreateFixture(fixDef);
-
-        deviation = ((Math.random()-0.5) * (100 - this.accuracy))/100;
-        angle += deviation;
-        impulse = bullet.GetBody().GetMass() * this.shotForce;
+        impulse = bullet.GetBody().GetMass() * this.shotForce();
         bullet.GetBody().ApplyImpulse(
               new b2Vec2(Math.cos(angle) * impulse,Math.sin(angle) * impulse),
               bullet.GetBody().GetWorldCenter()
@@ -188,6 +212,7 @@ var Y2Actor = Y2BaseActor.extend({
         sprite.fixture = bullet;
         GameManager.currentScene.layer.addChild(sprite);
         sprite.schedule(this.bulletSpriteUpdate, 1/60);
+        this.bulletsShot++;
     },
 
     bulletSpriteUpdate: function(dt){

@@ -108,10 +108,10 @@ var Box2DTest = cc.Layer.extend({
         this.addChild(this.ground2);
         this.addChild(this.ground);
 
-        this.crosshair = cc.Sprite.create("res/temp_crosshair.png");
-        this.crosshair.setAnchorPoint(cc.p(0.5, 0.5));
-        this.crosshair.setPosition(cc.p(size.width, size.height/2));
-        this.addChild(this.crosshair);
+        //this.crosshair = cc.Sprite.create("res/temp_crosshair.png");
+        //this.crosshair.setAnchorPoint(cc.p(0.5, 0.5));
+        //this.crosshair.setPosition(cc.p(size.width, size.height/2));
+        //this.addChild(this.crosshair);
 
         playerBody = this.addPhyisicsObject({
             height: 1.63,
@@ -182,9 +182,11 @@ var Box2DTest = cc.Layer.extend({
     },
 
     onTouchesMoved: function(pTouch, pEvent){
+        /*
         if(this.crosshair === undefined) return;
         touch = pTouch[0].getLocation();
             this.crosshair.setPosition(touch.x, touch.y);
+            */
     },
 
     onMouseDown: function(evt){
@@ -196,9 +198,11 @@ var Box2DTest = cc.Layer.extend({
     },
 
     onMouseMoved: function(evt){
+        /*
         if(this.crosshair === undefined) return;
         touch = evt.getLocation();
             this.crosshair.setPosition(touch.x, touch.y);
+        */
     },
 
     box2dInit:function()  {
