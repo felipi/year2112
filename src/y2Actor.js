@@ -32,6 +32,7 @@ var Y2Actor = Y2BaseActor.extend({
         this.scheduleUpdate();
         this.initWithFile("res/character.png", cc.rect(0,0,68,94));
         cc.TextureCache.getInstance().addImage("res/bullet.png");
+        this.equip.weapon = new Y2Weapon;
     },
 
     fireRate: function() {

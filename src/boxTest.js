@@ -100,6 +100,9 @@ var Box2DTest = cc.Layer.extend({
         this.ground = cc.Sprite.createWithTexture( tc.textureForKey("res/ground.png") );
         this.ground.setPosition(0, -30);
         this.ground2 = cc.Sprite.createWithTexture(tc.textureForKey("res/ground.png") );
+        this.ground2.setPosition(0, -30);
+        this.ground.setAnchorPoint(0,0);
+        this.ground2.setAnchorPoint(0,0);
 
         this.addChild(this.sky);
         this.addChild(this.sky2);
@@ -131,8 +134,6 @@ var Box2DTest = cc.Layer.extend({
     update: function(dt){
         position = this.ground.getPosition();
         size = this.ground.getContentSize();
-        this.ground.setAnchorPoint(0,0);
-        this.ground2.setAnchorPoint(0,0);
         if(position.x + size.width <= 0){
             this.ground.setPosition(this.ground2.getPosition().x, this.ground2.getPosition().y);
         }else{
