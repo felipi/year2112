@@ -1,7 +1,6 @@
-var Y2Actor = cc.Sprite.extend({
+var Y2Actor = Y2BaseActor.extend({
     
     stealth: true, //Wether in stealth mode or not
-    state: 'running', //Finite State Machine
     visibility: 0, //From 0 to 1, how visible/audible the actor is to others
     distanceWalked: 0, //Distance traveled on foot (jumps included) 
     furtiveness: 1, //How perceivable is the actor actions to others
@@ -13,9 +12,7 @@ var Y2Actor = cc.Sprite.extend({
     perception: 0, //How slower the world seems to this actor
     grazingLevel: 0, //The overall level of grazing skill of this actor
     grazing: 0, //Temporary grazing level, drains when not grazing
-    fireRate: 7, //Rate of fire for all Bullet Guns
     bulletsShot: 0, //How many bullets this actor has shot
-    accuracy: 75, //Weapon accuracy
     criticalShotChance: 0, //Critical chance for guns
     criticalShotDamage: 2, //Percent of critical damage for guns
     criticalMeleeChance: 0, //Critical chance for melee attacks
@@ -25,15 +22,8 @@ var Y2Actor = cc.Sprite.extend({
     shotForce: 50, //Force of the shot, should be moved to the weapon attrbiutes
    
     jumpImpulse: 100, //the ammount of impulse a jump takes
-    shieldCapacity: 90,
-    shield: 100,
-    fixture: null, //this is the physics fixture
-    isShooting: false,
-    shootTimer: 0,
     stabilityCounter: 0,
     canStartFlight:false,
-    runningSpeed:7,
-    flyingSpeed:30,
 
     ctor: function(){
         this.scheduleUpdate();
@@ -180,9 +170,12 @@ var Y2Actor = cc.Sprite.extend({
         crosshair = GameManager.currentScene.layer.crosshair;
         crossPos = new b2Vec2(crosshair.getPosition().x / GameManager.currentScene.layer.ptmRatio,
                               (cc.Director.getInstance().getWinSize().height - crosshair.getPosition().y) / GameManager.currentScene.layer.ptmRatio);
+        angle = Math.atan2(crossPos.y - bodyDef.position.y, crossPos.x - bodyDef.position.x);
+        bodyDef.angle = angle;
         bullet = GameManager.world.CreateBody(bodyDef).CreateFixture(fixDef);
-        angle = Math.atan2(crossPos.y - bullet.GetAABB().GetCenter().y, crossPos.x - bullet.GetAABB().GetCenter().x);// * (180/Math.PI);
-        angle += (Math.random() * (100 - this.accuracy))/100;
+
+        deviation = ((Math.random()-0.5) * (100 - this.accuracy))/100;
+        angle += deviation;
         impulse = bullet.GetBody().GetMass() * this.shotForce;
         bullet.GetBody().ApplyImpulse(
               new b2Vec2(Math.cos(angle) * impulse,Math.sin(angle) * impulse),
@@ -208,6 +201,7 @@ var Y2Actor = cc.Sprite.extend({
         }
         ptm = GameManager.currentScene.layer.ptmRatio;
         size = cc.Director.getInstance().getWinSize()
+        this.setRotation(this.fixture.GetBody().GetAngle() * 180/Math.PI);
         this.setPosition(
             this.fixture.GetBody().GetPosition().x * ptm,
             size.height - (this.fixture.GetBody().GetPosition().y * ptm)
