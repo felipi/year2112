@@ -6,5 +6,12 @@ var Y2BaseActor = cc.Sprite.extend({
     runningSpeed:7,
     flyingSpeed:30,
     isShooting: false,
-    shootTimer: 0
+    shootTimer: 0,
+
+    ctor: function(){
+    },
+
+    update: function(dt){
+
+    }
 });

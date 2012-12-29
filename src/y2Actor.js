@@ -31,8 +31,7 @@ var Y2Actor = Y2BaseActor.extend({
     ctor: function(){
         this.scheduleUpdate();
         this.initWithFile("res/character.png", cc.rect(0,0,68,94));
-        cc.TextureCache.getInstance().addImage("res/bullet.png");
-        this.equip.weapon = new Y2Weapon;
+        this.equip.weapon = new Y2Weapon("Common Rifle", 0.05, 1,0);
     },
 
     fireRate: function() {
@@ -187,7 +186,7 @@ var Y2Actor = Y2BaseActor.extend({
         fixDef.density = 1.0;
         fixDef.friction = 0;
         fixDef.restitution = 0.4;
-        fixDef.shape.SetAsBox(0.05,0.05);
+        fixDef.shape.SetAsBox(this.equip.weapon.size, this.equip.weapon.size);
         fixDef.filter.categoryBits = GameManager.currentScene.layer.box2dFlags.BULLET;
         fixDef.filter.maskBits = GameManager.currentScene.layer.box2dFlags.ACTOR | GameManager.currentScene.layer.box2dFlags.GROUND ; 
         bodyDef.position.x = this.fixture.GetAABB().GetCenter().x + this.fixture.GetAABB().GetExtents().x ;
@@ -209,7 +208,8 @@ var Y2Actor = Y2BaseActor.extend({
               );
 
         
-        sprite = cc.Sprite.createWithTexture( cc.TextureCache.getInstance().textureForKey("res/bullet.png") );
+        //sprite = cc.Sprite.createWithTexture( cc.TextureCache.getInstance().textureForKey("res/bullet.png") );
+        sprite = cc.Sprite.createWithSpriteFrame( cc.SpriteFrameCache.getInstance().getSpriteFrame( this.equip.weapon.name + "Bullet" ));
         bullet.SetUserData(sprite);
         sprite.fixture = bullet;
         GameManager.currentScene.layer.addChild(sprite, 16);
