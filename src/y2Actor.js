@@ -19,9 +19,10 @@ var Y2Actor = Y2BaseActor.extend({
     criticalMeleeDamage: 4, //Percent of critical damage for melee attacks
     chargeShot: 0, //Overall level of charge shot skill
     chargeSpeed: 1, //Speed of charging weapons
+    hitBoxSize:0.5,
     autoFire: true,
    
-    jumpImpulse: 100, //the ammount of impulse a jump takes
+    jumpImpulse: 75, //the ammount of impulse a jump takes
     stabilityCounter: 0,
     canStartFlight:false,
 
@@ -60,6 +61,41 @@ var Y2Actor = Y2BaseActor.extend({
         animate = cc.Animate.create(this.anims.run);
         this.runAction( cc.RepeatForever.create(animate));
 
+    },
+
+    createHitBox: function(){
+        var   b2Vec2 = Box2D.Common.Math.b2Vec2
+            ,   b2BodyDef = Box2D.Dynamics.b2BodyDef
+            ,   b2Body = Box2D.Dynamics.b2Body
+            ,   b2FixtureDef = Box2D.Dynamics.b2FixtureDef
+            ,   b2Fixture = Box2D.Dynamics.b2Fixture
+            ,   b2World = Box2D.Dynamics.b2World
+            ,   b2MassData = Box2D.Collision.Shapes.b2MassData
+            ,   b2PolygonShape = Box2D.Collision.Shapes.b2PolygonShape
+            ,   b2CircleShape = Box2D.Collision.Shapes.b2CircleShape
+            ,   b2DebugDraw = Box2D.Dynamics.b2DebugDraw
+            ;
+        var bodyDef = new b2BodyDef;
+        var fixDef = new b2FixtureDef;
+        bodyDef.type = b2Body.b2_dynamicBody;
+        fixDef.shape = new b2CircleShape;
+        fixDef.density = 0.001;
+        //fixDef.friction = 0;
+        //fixDef.restitution = 0.1;
+        //fixDef.shape.Set();
+        fixDef.shape.SetRadius(this.hitBoxSize);
+        fixDef.filter.categoryBits = GameManager.currentScene.layer.box2dFlags.HITBOX;
+        fixDef.filter.maskBits = GameManager.currentScene.layer.box2dFlags.BULLET;
+        bodyDef.position.x = this.getBody().GetWorldCenter().x;
+        bodyDef.position.y = this.getBody().GetWorldCenter().y;
+        hitBody = GameManager.currentScene.layer.world.CreateBody(bodyDef);
+        hitBody.CreateFixture(fixDef);
+
+        b2WeldJointDef = Box2D.Dynamics.Joints.b2WeldJointDef;
+        var weld = new b2WeldJointDef();
+        weld.collideConnected = false;
+        weld.Initialize(hitBody, this.getBody(), this.getBody().GetWorldCenter());
+        GameManager.currentScene.layer.world.CreateJoint(weld);
     },
 
     update: function(dt) {
@@ -254,7 +290,7 @@ var Y2Actor = Y2BaseActor.extend({
     },
 
     bulletSpriteUpdate: function(dt){
-        if (this.life == undefined) this.life = 3.5;
+        if (this.life == undefined) this.life = 1.5;
             this.life -= dt;
         if(this.life <= 0) {
             this.unscheduleAllCallbacks();

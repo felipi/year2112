@@ -79,13 +79,14 @@ var Box2DTest = cc.Layer.extend({
 
         playerBody = this.addPhyisicsObject({
             height: 1.63,
-            x: 0.3,
+            x: 1,
             y: 2,
             player: true
         });
         GameManager.player = new Y2Actor();
         GameManager.player.fixture = playerBody;
         GameManager.player.fixture.SetUserData(GameManager.player);
+        GameManager.player.createHitBox();
         this.addChild(GameManager.player, 15);
         this.travelSpeed = GameManager.player.runningSpeed;
         this.scheduleUpdate();
@@ -300,8 +301,11 @@ var Box2DTest = cc.Layer.extend({
         );
         if(parameters.player == true){
             fixDef.filter.categoryBits = this.box2dFlags.PLAYER;
+            bodyDef.fixedRotation = true;
         }else{
             fixDef.filter.categoryBits = this.box2dFlags.ACTOR;
+            bodyDef.fixedRotation = false;
+            bodyDef.angularDamping = 3;
         }
 
         if(parameters.through == true){
@@ -309,7 +313,6 @@ var Box2DTest = cc.Layer.extend({
         }else if(parameters.through == false){
             fixDef.filter.maskBits = ~GameManager.currentScene.layer.box2dFlags.BOUNDS & ~GameManager.currentScene.layer.box2dFlags.PLAYER ; 
         }
-        bodyDef.fixedRotation = true;
         bodyDef.position.x = parameters.x;
         bodyDef.position.y = (cc.Director.getInstance().getWinSize().height/this.ptmRatio) - parameters.y;
         return this.world.CreateBody(bodyDef).CreateFixture(fixDef); 
@@ -332,8 +335,9 @@ var Box2DTest = cc.Layer.extend({
         BOUNDS: 0x0001,
         GROUND: 0x0010,
         ACTOR: 0x0002,
-        BULLET: 0x0003,
-        PLAYER: 0x0004
+        BULLET: 0x1000,
+        PLAYER: 0x0004,
+        HITBOX: 0x0100
     } 
 
 });
@@ -342,10 +346,10 @@ var Box2DScene = cc.Scene.extend({
     layer: null,
 
     onEnter:function () {
+        GameManager.currentScene = this;
         this._super();
         this.layer = new Box2DTest();
         this.addChild(this.layer);
         this.layer.init();
-        GameManager.currentScene = this;
     }
 });

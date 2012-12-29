@@ -32,11 +32,18 @@ var Y2Enemy = Y2BaseActor.extend({
     },
 
     update: function(dt){
-        this.setAnchorPoint(-0.5,1);
         ptm = GameManager.currentScene.layer.ptmRatio;
+        this.setRotation(this.fixture.GetBody().GetAngle() * 180/Math.PI);
         this.setPosition(
-                (this.getBody().GetPosition().x * ptm) - (this.getContentSize().width/2),
-                cc.Director.getInstance().getWinSize().height - (this.getBody().GetPosition().y * ptm) - (this.getContentSize().height/2));
+                (this.getBody().GetPosition().x * ptm),
+                cc.Director.getInstance().getWinSize().height - (this.getBody().GetPosition().y * ptm));
+
+        if(this.getBody().GetPosition().x < -this.size.w){
+            this.unscheduleAllCallbacks();
+            this.getParent().removeChild(this);
+            GameManager.world.DestroyBody(this.fixture.GetBody());
+            return;
+        }
 
         if(this.behaviour == "passAndShoot"){
             this.move();
@@ -85,7 +92,7 @@ var Y2Enemy = Y2BaseActor.extend({
         fixDef.restitution = 0.4;
         fixDef.shape.SetAsBox(this.equip.weapon.size, this.equip.weapon.size);
         fixDef.filter.categoryBits = GameManager.currentScene.layer.box2dFlags.BULLET;
-        fixDef.filter.maskBits = GameManager.currentScene.layer.box2dFlags.PLAYER | GameManager.currentScene.layer.box2dFlags.GROUND ; 
+        fixDef.filter.maskBits = GameManager.currentScene.layer.box2dFlags.HITBOX | GameManager.currentScene.layer.box2dFlags.GROUND ; 
         bodyDef.position.x = this.fixture.GetAABB().GetCenter().x - this.fixture.GetAABB().GetExtents().x ;
         bodyDef.position.y = this.fixture.GetAABB().GetCenter().y;// - this.fixture.GetAABB().GetExtents().y/2;
 
@@ -119,7 +126,7 @@ var Y2Enemy = Y2BaseActor.extend({
     },
 
     bulletSpriteUpdate: function(dt){
-        if (this.life == undefined) this.life = 3.5;
+        if (this.life == undefined) this.life = 1.5;
             this.life -= dt;
         if(this.life <= 0) {
             this.unscheduleAllCallbacks();
