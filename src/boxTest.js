@@ -48,6 +48,7 @@ var Box2DTest = cc.Layer.extend({
         tc.addImage("res/buildings.png"); 
         tc.addImage("res/sky.png"); 
         tc.addImage("res/ground.png"); 
+        
         this.sky = cc.Sprite.createWithTexture( tc.textureForKey("res/sky.png") );
         this.sky2 = cc.Sprite.createWithTexture( tc.textureForKey("res/sky.png") );
         this.sky.setAnchorPoint(0,0);
@@ -62,12 +63,14 @@ var Box2DTest = cc.Layer.extend({
         this.ground.setAnchorPoint(0,0);
         this.ground2.setAnchorPoint(0,0);
 
+        ///*
         this.addChild(this.sky, 1);
         this.addChild(this.sky2, 1);
         this.addChild(this.buildings, 2);
         this.addChild(this.buildings2, 2);
         this.addChild(this.ground2, 3);
         this.addChild(this.ground, 3);
+        //*/
 
         //this.crosshair = cc.Sprite.create("res/temp_crosshair.png");
         //this.crosshair.setAnchorPoint(cc.p(0.5, 0.5));
@@ -90,6 +93,13 @@ var Box2DTest = cc.Layer.extend({
     },
 
     update: function(dt){
+        if(this.waveTimer == undefined) this.waveTimer = 5;
+        this.waveTimer -= dt;
+        if(this.waveTimer <= 0){
+            this.addEnemies();
+            this.waveTimer = 5;
+        }
+
         position = this.ground.getPosition();
         size = this.ground.getContentSize();
         if(position.x + size.width <= 0){
@@ -164,6 +174,25 @@ var Box2DTest = cc.Layer.extend({
         */
     },
 
+    addEnemies: function() {
+        var size = cc.Director.getInstance().getWinSize();
+        console.log("ADD ENEMIES");
+        enemy = new Y2Enemy();
+        spawnx = (size.width/this.ptmRatio) + enemy.size.w;
+        spawny = 20 * Math.random();
+        body = this.addPhyisicsObject({
+            height: enemy.size.w,
+            width: enemy.size.h,
+            x: spawnx,
+            y: spawny,
+            through: false,
+            player: false
+        });
+        enemy.fixture = body;
+        enemy.fixture.SetUserData(enemy);
+        this.addChild(enemy, 15);
+    },
+
     box2dInit:function()  {
 
      var   b2Vec2 = Box2D.Common.Math.b2Vec2
@@ -178,7 +207,7 @@ var Box2DTest = cc.Layer.extend({
         ,   b2DebugDraw = Box2D.Dynamics.b2DebugDraw
         ,   b2Listener = Box2D.Dynamics.b2ContactListener
         ;
-
+     ///*
      var playerListener = new b2Listener;
      playerListener.BeginContact = function(contact){
         categoryA = contact.GetFixtureA().GetFilterData().categoryBits;  
@@ -187,12 +216,12 @@ var Box2DTest = cc.Layer.extend({
            categoryA == GameManager.currentScene.layer.box2dFlags.ACTOR){
                if(categoryB == GameManager.currentScene.layer.box2dFlags.GROUND){
                 actor = contact.GetFixtureA().GetUserData();
-                if(actor.state == "jumping")
+                if(actor.state == "jumping" || actor.state == "falling")
                     actor.run();
                }
         }
      }
-
+     //*/
      world = new b2World(
            new b2Vec2(-this.travelSpeed, 10)    //gravity
         ,  true                 //allow sleep
@@ -269,10 +298,16 @@ var Box2DTest = cc.Layer.extend({
             parameters.width,
             parameters.height
         );
-        if(parameters.player != undefined){
+        if(parameters.player == true){
             fixDef.filter.categoryBits = this.box2dFlags.PLAYER;
         }else{
             fixDef.filter.categoryBits = this.box2dFlags.ACTOR;
+        }
+
+        if(parameters.through == true){
+            fixDef.filter.maskBits = GameManager.currentScene.layer.box2dFlags.ACTOR | GameManager.currentScene.layer.box2dFlags.GROUND ; 
+        }else if(parameters.through == false){
+            fixDef.filter.maskBits = ~GameManager.currentScene.layer.box2dFlags.BOUNDS & ~GameManager.currentScene.layer.box2dFlags.PLAYER ; 
         }
         bodyDef.fixedRotation = true;
         bodyDef.position.x = parameters.x;

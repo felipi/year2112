@@ -43,6 +43,7 @@
             'src/y2Manager.js',
             'src/y2Weapon.js',
             'src/y2BaseActor.js',
+            'src/y2Enemy.js',
             'src/y2Actor.js',
             'src/myApp.js',
             'src/boxTest.js'

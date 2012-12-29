@@ -20,14 +20,22 @@ var Y2Actor = Y2BaseActor.extend({
     chargeShot: 0, //Overall level of charge shot skill
     chargeSpeed: 1, //Speed of charging weapons
     autoFire: true,
-    equip: {
-        weapon: null,
-    },
    
     jumpImpulse: 100, //the ammount of impulse a jump takes
     stabilityCounter: 0,
     canStartFlight:false,
 
+    equip: {
+        weapon: null,
+    },
+    frameSize: {
+        w: 83,
+        h: 107
+    },
+    anims: {
+        run: null,
+        fly: null,
+    },
     ctor: function(){
         this.scheduleUpdate();
         this.initWithFile("res/character.png", cc.rect(0,0,68,94));
@@ -54,33 +62,23 @@ var Y2Actor = Y2BaseActor.extend({
 
     },
 
-    fireRate: function() {
-        if(this.equip.weapon == null)
-            return 0;
-        else
-            return this.equip.weapon.fireRate;
-    },
-
-    shotForce: function() {
-        if(this.equip.weapon == null)
-            return 0;
-        else
-            return this.equip.weapon.shotForce;
-    },
-
-    accuracy: function() {
-        if(this.equip.weapon == null)
-            return 0;
-        else
-            return this.equip.weapon.accuracy;
-    },
-
     update: function(dt) {
         this.setAnchorPoint(-0.5,1);
         ptm = GameManager.currentScene.layer.ptmRatio;
         this.setPosition(
                 (this.getBody().GetPosition().x * ptm) - (this.getContentSize().width/2),
                 cc.Director.getInstance().getWinSize().height - (this.getBody().GetPosition().y * ptm) - (this.getContentSize().height/2));
+
+        if(this.state == "jumping" && this.getBody().GetLinearVelocity().y > 0) {
+            this.state = "falling";
+            
+            this.stopAllActions();
+            animate = cc.Animate.create(this.anims.fall);
+            this.runAction( cc.RepeatForever.create(animate));
+        } 
+        if(this.state != "flying" && this.getBody().GetLinearVelocity().y ==0){
+            this.run();
+        }
         if(this.state == "flying"){
             this.stabilityCounter += dt;
         }
@@ -97,7 +95,7 @@ var Y2Actor = Y2BaseActor.extend({
         if(GameManager.keysDown.indexOf(cc.KEY.w) >= 0
            && this.canStartFlight
            && this.getBody().GetLinearVelocity().y != 0
-           && (this.state == "running" || this.state == "jumping") ){
+           && (this.state == "running" || this.state == "jumping" || this.state == "falling") ){
             this.fly();
         }
 
@@ -176,8 +174,9 @@ var Y2Actor = Y2BaseActor.extend({
     },
 
     run: function() {
-        actor.state = "running";
-        actor.canStartFlight = false;
+        if(this.state == "running") return;
+        this.state = "running";
+        this.canStartFlight = false;
         speed = this.runningSpeed;
         createjs.Tween.get(GameManager.currentScene.layer).to({travelSpeed:speed}, 300, createjs.Ease.circIn);
         
@@ -187,7 +186,7 @@ var Y2Actor = Y2BaseActor.extend({
     },
 
     fall: function() {
-        this.state = "jumping";
+        this.state = "falling";
         this.getBody().SetLinearDamping(0);
 
         this.stopAllActions();
@@ -255,7 +254,7 @@ var Y2Actor = Y2BaseActor.extend({
     },
 
     bulletSpriteUpdate: function(dt){
-        if (this.life == undefined) this.life = 1.5;
+        if (this.life == undefined) this.life = 3.5;
             this.life -= dt;
         if(this.life <= 0) {
             this.unscheduleAllCallbacks();

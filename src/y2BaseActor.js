@@ -7,13 +7,26 @@ var Y2BaseActor = cc.Sprite.extend({
     flyingSpeed:30,
     isShooting: false,
     shootTimer: 0,
-    frameSize: {
-        w: 83,
-        h: 107
+
+    fireRate: function() {
+        if(this.equip.weapon == null)
+            return 0;
+        else
+            return this.equip.weapon.fireRate;
     },
-    anims: {
-        run: null,
-        fly: null,
+
+    shotForce: function() {
+        if(this.equip.weapon == null)
+            return 0;
+        else
+            return this.equip.weapon.shotForce;
+    },
+
+    accuracy: function() {
+        if(this.equip.weapon == null)
+            return 0;
+        else
+            return this.equip.weapon.accuracy;
     },
 
     ctor: function(){
@@ -35,9 +48,7 @@ var Y2BaseActor = cc.Sprite.extend({
         for(j=first.y;j<=last.y;j++){
             i = j==first.y ? first.x : 0;
             end = j==last.y ? last.x : numFramesX-1;
-            console.log("I = "+ i + "J = ", j);
             for(i;i<=end;i++){
-                console.log("Animation creation: " + i + " - "+ j); 
                 f = cc.SpriteFrame.createWithTexture(tex, cc.rect(i*fsize.w, j*fsize.h,fsize.w,fsize.h));
                 frames.push(f);
             }
