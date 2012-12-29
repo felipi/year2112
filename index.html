@@ -12,28 +12,34 @@
         -webkit-transform: translate3d(0, 0, 0);
         -moz-transform: translate3d(0,0,0);
      }
+
+     div, canvas {
+        width: 100%;
+        height: auto;
+        max-height: 100%;
+     }
     </style>
 </head>
 <body bg-color="#000" style="padding:0; margin: 0; background-color: #000; color: #666">
-    <p style="width: 200px; position: fixed">
-    Instructions: <br></br>
-    Use W to jump when running.<br></br>
+    <p style="width: 100%; position: fixed; z-index: 100">
+    Instructions: <br>
+    Use W to jump when running.<br>
 
-    Use W in mid-air to start flying.<br></br>
+    Use W in mid-air to start flying.<br>
 
-    While flying, use WASD to move around.<br></br>
+    While flying, use WASD to move around.<br>
 
-    If you stop controlling the character, she will fall again to running stance after a while.<br></br>
+    If you stop controlling the character, she will fall again to running stance after a while.<br>
 
 
-    As this is a RPG, every flying, running and shooting parameter will be enhanced through skills and experience. Some of them can be already modified if you use Chrome Dev Tools/Firebug, just use the console and see the object GameManager.player.<br></br>
+    As this is a RPG, every flying, running and shooting parameter will be enhanced through skills and experience. Some of them can be already modified if you use Chrome Dev Tools/Firebug, just use the console and see the object GameManager.player.<br>
 
-<br></br>
+<br>
 
-    v. 0.0.1
+    v. 0.0.2
 
     </p>
-<div style="text-align: center; font-size: 0; position: fixed; left: 50%; top: 50%; margin-left: -480px;">
+<div style="text-align: center; font-size: 0; position: fixed; top: 50%;">
     <canvas id="gameCanvas" width="960" height="640"></canvas>
     <canvas id="debugDraw" width="960" height="640" style="z-index: -1; position: absolute; top:0; left:0"></canvas>
 </div>

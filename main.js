@@ -39,9 +39,9 @@ var cocos2dApp = cc.Application.extend({
         };
         cc.Loader.getInstance().onload = function () {
             cc.AppController.shareAppController().didFinishLaunchingWithOptions();
-            //cc.adjustSizeForWindow();
+            cc.adjustSizeForWindow();
             window.addEventListener("resize", function (event) {
-                //cc.adjustSizeForWindow();
+                cc.adjustSizeForWindow();
             });
         };
         cc.Loader.getInstance().preload(g_ressources);
@@ -69,24 +69,24 @@ var cocos2dApp = cc.Application.extend({
 
 cc.adjustSizeForWindow = function () {
     var margin = document.documentElement.clientWidth - document.body.clientWidth;
-    if (document.documentElement.clientWidth < cc.originalCanvasSize.width) {
-        cc.canvas.width = cc.originalCanvasSize.width;
-    } else {
+    //if (document.documentElement.clientWidth < cc.originalCanvasSize.width) {
+    //    cc.canvas.width = cc.originalCanvasSize.width;
+   // } else {
         cc.canvas.width = document.documentElement.clientWidth - margin;
-    }
-    if (document.documentElement.clientHeight < cc.originalCanvasSize.height) {
-        cc.canvas.height = cc.originalCanvasSize.height;
-    } else {
+   // }
+    //if (document.documentElement.clientHeight < cc.originalCanvasSize.height) {
+    //    cc.canvas.height = cc.originalCanvasSize.height;
+    //} else {
         cc.canvas.height = document.documentElement.clientHeight - margin;
-    }
+    //}
 
     var xScale = cc.canvas.width / cc.originalCanvasSize.width;
     var yScale = cc.canvas.height / cc.originalCanvasSize.height;
-    if (yScale > xScale) {
-        yScale = xScale;
-    }
+    //if (yScale > xScale) {
+    //    yScale = xScale;
+    //}
     cc.canvas.width = cc.originalCanvasSize.width * xScale;
-    cc.canvas.height = cc.originalCanvasSize.height * xScale;
+    cc.canvas.height = cc.originalCanvasSize.height * yScale;
     var divContainer = document.getElementById("Container");
     var parentDiv = document.getElementById("Cocos2dGameContainer");
     if (parentDiv) {
@@ -98,7 +98,7 @@ cc.adjustSizeForWindow = function () {
         divContainer.style.height = cc.canvas.height + "px";
     }
     cc.renderContext.translate(0, cc.canvas.height);
-    cc.renderContext.scale(xScale, xScale);
+    cc.renderContext.scale(xScale, yScale);
     cc.Director.getInstance().setContentScaleFactor(xScale);
 }
 

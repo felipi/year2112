@@ -33,59 +33,17 @@ var Box2DTest = cc.Layer.extend({
     init:function () {
         var selfPointer = this;
 
-        //////////////////////////////
-        // 1. super init first
         this._super();
         this.setMouseEnabled(true);
         this.setTouchEnabled(true);
         this.setKeyboardEnabled(true);
-        //cc.adjustSizeForWindow();
+        cc.adjustSizeForWindow();
 
-        /////////////////////////////
-        // 2. add a menu item with "X" image, which is clicked to quit the program
-        //    you may modify it.
-        // ask director the window size
         var size = cc.Director.getInstance().getWinSize();
 
-        // add a "close" icon to exit the progress. it's an autorelease object
-        /*
-        var closeItem = cc.MenuItemImage.create(
-            "res/CloseNormal.png",
-            "res/CloseSelected.png",
-            function () {
-                history.go(-1);
-            },this);
-        closeItem.setAnchorPoint(cc.p(0.5, 0.5));
-
-        var menu = cc.Menu.create(closeItem, null);
-        menu.setPosition(cc.PointZero());
-        this.addChild(menu, 1);
-        closeItem.setPosition(cc.p(size.width - 20, 20));
-        // */
-
-        /////////////////////////////
-        // 3. add your codes below...
-        // add a label shows "Hello World"
-        // create and initialize a label
-        //this.helloLabel = cc.LabelTTF.create("Box2D", "Arial", 38);
-        // position the label on the center of the screen
-        //this.helloLabel.setPosition(cc.p(size.width / 2, size.height - 100));
-        // add the label as a child to this layer
-        //this.addChild(this.helloLabel, 5);
-
-        //var lazyLayer = new cc.LazyLayer();
-        //this.addChild(lazyLayer);
-
-        // add "Helloworld" splash screen"
-        //this.sprite = cc.Sprite.create("res/HelloWorld.png");
-        //this.sprite.setAnchorPoint(cc.p(0.5, 0.5));
-        //this.sprite.setPosition(cc.p(size.width / 2, size.height / 2));
-
         var debugLayer = document.getElementById("debugDraw");
-        //lazyLayer.addChild(this.sprite, 0);
-        //lazyLayer.adjustSizeForCanvas();
-
         this.box2dInit();
+        
         tc = cc.TextureCache.getInstance();
         tc.addImage("res/buildings.png"); 
         tc.addImage("res/sky.png"); 
@@ -104,12 +62,12 @@ var Box2DTest = cc.Layer.extend({
         this.ground.setAnchorPoint(0,0);
         this.ground2.setAnchorPoint(0,0);
 
-        this.addChild(this.sky);
-        this.addChild(this.sky2);
-        this.addChild(this.buildings);
-        this.addChild(this.buildings2);
-        this.addChild(this.ground2);
-        this.addChild(this.ground);
+        this.addChild(this.sky, 1);
+        this.addChild(this.sky2, 1);
+        this.addChild(this.buildings, 2);
+        this.addChild(this.buildings2, 2);
+        this.addChild(this.ground2, 3);
+        this.addChild(this.ground, 3);
 
         //this.crosshair = cc.Sprite.create("res/temp_crosshair.png");
         //this.crosshair.setAnchorPoint(cc.p(0.5, 0.5));
@@ -125,7 +83,7 @@ var Box2DTest = cc.Layer.extend({
         GameManager.player = new Y2Actor();
         GameManager.player.fixture = playerBody;
         GameManager.player.fixture.SetUserData(GameManager.player);
-        this.addChild(GameManager.player);
+        this.addChild(GameManager.player, 15);
         this.travelSpeed = GameManager.player.runningSpeed;
         this.scheduleUpdate();
         return true;
@@ -234,9 +192,6 @@ var Box2DTest = cc.Layer.extend({
                }
         }
      }
-     playerListener.EndContact = function(contact){
-        //contact.GetFixtureA().GetBody().SetLinearDamping(0);
-     }
 
      world = new b2World(
            new b2Vec2(-this.travelSpeed, 10)    //gravity
@@ -261,7 +216,7 @@ var Box2DTest = cc.Layer.extend({
      fixDef.filter.categoryBits = this.box2dFlags.GROUND;
      world.CreateBody(bodyDef).CreateFixture(fixDef);
      fixDef.filter.categoryBits = this.box2dFlags.BOUNDS;
-     bodyDef.position.y = 0.25;
+     bodyDef.position.y = -1;
      world.CreateBody(bodyDef).CreateFixture(fixDef);   
      fixDef.shape.SetAsBox(0.3, size.height/this.ptmRatio);
      fixDef.friction = 0;
@@ -272,7 +227,6 @@ var Box2DTest = cc.Layer.extend({
      
      //setup debug draw
      var debugDraw = new b2DebugDraw();
-        //debugDraw.SetSprite(displayList.debug.getContext("2d"));
         debugDraw.SetSprite(document.getElementById("debugDraw").getContext("2d"));
         debugDraw.SetDrawScale(this.ptmRatio);
         debugDraw.SetFillAlpha(0.3);
@@ -285,6 +239,13 @@ var Box2DTest = cc.Layer.extend({
     },
     
     addPhyisicsObject: function(parameters){
+        if (parameters.width == undefined)
+            parameters.width = parameters.height/2;
+        if (parameters.height == undefined)
+            parameters.height = parameters.width/2;
+        if(parameters.width == undefined && parameters.height == undefined)
+            parameters.width = parameters.height = 1;
+
         var   b2Vec2 = Box2D.Common.Math.b2Vec2
             ,   b2BodyDef = Box2D.Dynamics.b2BodyDef
             ,   b2Body = Box2D.Dynamics.b2Body
@@ -305,7 +266,7 @@ var Box2DTest = cc.Layer.extend({
         fixDef.restitution = 0.1;
         
         fixDef.shape.SetAsBox(
-            parameters.height/2,
+            parameters.width,
             parameters.height
         );
         if(parameters.player != undefined){

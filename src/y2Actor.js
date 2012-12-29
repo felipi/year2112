@@ -99,7 +99,8 @@ var Y2Actor = Y2BaseActor.extend({
            this.maneuver(1,0); 
         }
 
-        if((GameManager.isMouseDown || this.autoFire) && this.shootTimer <= 0 && this.fireRate() > 0){
+        if((GameManager.isMouseDown || this.autoFire)
+                && this.shootTimer <= 0 && this.fireRate() > 0 && this.state == "flying"){
             this.shoot();
         }
 
@@ -211,7 +212,7 @@ var Y2Actor = Y2BaseActor.extend({
         sprite = cc.Sprite.createWithTexture( cc.TextureCache.getInstance().textureForKey("res/bullet.png") );
         bullet.SetUserData(sprite);
         sprite.fixture = bullet;
-        GameManager.currentScene.layer.addChild(sprite);
+        GameManager.currentScene.layer.addChild(sprite, 16);
         sprite.schedule(this.bulletSpriteUpdate, 1/60);
         this.bulletsShot++;
     },
