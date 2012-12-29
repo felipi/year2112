@@ -95,10 +95,6 @@ var Y2Enemy = Y2BaseActor.extend({
         bodyDef.position.x = this.fixture.GetAABB().GetCenter().x - this.fixture.GetAABB().GetExtents().x ;
         bodyDef.position.y = this.fixture.GetAABB().GetCenter().y;// - this.fixture.GetAABB().GetExtents().y/2;
 
-        //crosshair = GameManager.currentScene.layer.crosshair;
-        //crossPos = new b2Vec2(crosshair.getPosition().x / GameManager.currentScene.layer.ptmRatio,
-        //                      (cc.Director.getInstance().getWinSize().height - crosshair.getPosition().y) / GameManager.currentScene.layer.ptmRatio);
-        //angle = Math.atan2(crossPos.y - bodyDef.position.y, crossPos.x - bodyDef.position.x);
         angle = 0;// SHOOT STRAIGHT!
         deviation = ((Math.random()-0.5) * (100 - this.accuracy()))/100;
         angle += deviation;
@@ -110,18 +106,12 @@ var Y2Enemy = Y2BaseActor.extend({
               bullet.GetBody().GetWorldCenter()
               );
 
-        
-        //sprite = cc.Sprite.createWithTexture( cc.TextureCache.getInstance().textureForKey("res/bullet.png") );
         sprite = cc.Sprite.createWithSpriteFrame( cc.SpriteFrameCache.getInstance().getSpriteFrame( this.equip.weapon.name + "Bullet" ));
         bullet.SetUserData(sprite);
         sprite.fixture = bullet;
         GameManager.currentScene.layer.addChild(sprite, 16);
         sprite.schedule(this.bulletSpriteUpdate, 1/60);
         this.bulletsShot++;
-
-        //this.stopAllActions();
-        //animate = cc.Animate.create(this.anims.shoot);
-        //this.runAction( animate );
     },
 
     bulletSpriteUpdate: function(dt){
@@ -129,12 +119,33 @@ var Y2Enemy = Y2BaseActor.extend({
             this.life -= dt;
         if(this.life <= 0) {
             this.unscheduleAllCallbacks();
-            this.getParent().removeChild(this);
             GameManager.world.DestroyBody(this.fixture.GetBody());
+
+            this.emitter.destroyParticleSystem();
+            this.emitter.getParent().removeChild(this.emitter);
+            this.getParent().removeChild(this);
             return;
+        }
+        if(this.emitter == undefined){
+            ///*
+            this.emitter = new cc.ParticleFire();
+            this.emitter.initWithTotalParticles(15);
+            this.emitter.setSpeed(10);
+            this.emitter.setEmissionRate(200);
+            this.emitter.setZOrder(20);
+            this.emitter.setStartSize(2);
+            //this.emitter.setStartColor( new cc.Color4B(1,0.9,1,0.5));
+            this.emitter.setEndSize(15);
+            this.emitter.setPosVar(cc.p(0,0));
+            this.emitter.setLife(0.02);
+            this.emitter.setGravity(cc.p(0,0));
+            this.emitter.setPosition(0,0);
+            this.getParent().addChild(this.emitter);
+            //*/
         }
         ptm = GameManager.currentScene.layer.ptmRatio;
         size = cc.Director.getInstance().getWinSize()
+        this.emitter.setSourcePosition(cc.p(this.getPosition().x - this.getContentSize().width/2, (this.getPosition().y)));
         this.setRotation(this.fixture.GetBody().GetAngle() * 180/Math.PI);
         this.setPosition(
             this.fixture.GetBody().GetPosition().x * ptm,
