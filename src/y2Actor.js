@@ -32,6 +32,26 @@ var Y2Actor = Y2BaseActor.extend({
         this.scheduleUpdate();
         this.initWithFile("res/character.png", cc.rect(0,0,68,94));
         this.equip.weapon = new Y2Weapon("Common Rifle", 0.05, 1,0);
+        this.setPosition(0,0);
+
+        //run animation:
+        tc = cc.TextureCache.getInstance();
+        tex = tc.textureForKey("res/hero.png");
+        if(tex == null){
+            tex = tc.addImage("res/hero.png");
+        }
+        //f0 = cc.SpriteFrame.createWithTexture(tex, cc.rect(0,0,this.frameSize.w, this.frameSize.h)); 
+        //f1 = cc.SpriteFrame.createWithTexture(tex, cc.rect(1*this.frameSize.w,0,this.frameSize.w, this.frameSize.h)); 
+        //runFrames = [f0,f1];
+        //this.anims.fall = cc.Animation.create(runFrames, 0.1);
+        //animate = cc.Animate.create(this.anims.run);
+        this.anims.fall = this.createAnimation(tex,{w:84,h:107},6,{x:0,y:0},{x:1,y:0},0.1);
+        this.anims.jump = this.createAnimation(tex,{w:84,h:107},6,{x:2,y:0},{x:3,y:0},0.1);
+        this.anims.run = this.createAnimation(tex,{w:84,h:107},6,{x:0,y:1},{x:2,y:2},0.075);
+        this.anims.fly = this.createAnimation(tex,{w:84,h:107},6,{x:3,y:2},{x:4,y:2}, 0.08);
+        animate = cc.Animate.create(this.anims.run);
+        this.runAction( cc.RepeatForever.create(animate));
+
     },
 
     fireRate: function() {
@@ -56,7 +76,7 @@ var Y2Actor = Y2BaseActor.extend({
     },
 
     update: function(dt) {
-        this.setAnchorPoint(-0.5,0.5);
+        this.setAnchorPoint(-0.5,1);
         ptm = GameManager.currentScene.layer.ptmRatio;
         this.setPosition(
                 (this.getBody().GetPosition().x * ptm) - (this.getContentSize().width/2),
@@ -118,9 +138,6 @@ var Y2Actor = Y2BaseActor.extend({
         this.getBody().ApplyForce(counter, this.getBody().GetWorldCenter() ) 
     },
 
-    getBody: function() {
-        return this.fixture.GetBody();
-    },
 
     jump: function() {
         this.state = "jumping";
@@ -131,6 +148,10 @@ var Y2Actor = Y2BaseActor.extend({
               new b2Vec2(0, impulse),
               body.GetWorldCenter()
               );
+        
+        this.stopAllActions();
+        animate = cc.Animate.create(this.anims.jump);
+        this.runAction( cc.RepeatForever.create(animate));
     },
 
     fly: function(){
@@ -138,6 +159,10 @@ var Y2Actor = Y2BaseActor.extend({
         createjs.Tween.get(GameManager.currentScene.layer, {paused:false}).to({travelSpeed:speed}, 1000, createjs.Ease.circIn);
         this.state = "flying";
         this.getBody().SetLinearDamping(5*this.control);
+
+        this.stopAllActions();
+        animate = cc.Animate.create(this.anims.fly);
+        this.runAction( cc.RepeatForever.create(animate));
     },
 
     maneuver: function(x,y){
@@ -155,11 +180,19 @@ var Y2Actor = Y2BaseActor.extend({
         actor.canStartFlight = false;
         speed = this.runningSpeed;
         createjs.Tween.get(GameManager.currentScene.layer).to({travelSpeed:speed}, 300, createjs.Ease.circIn);
+        
+        this.stopAllActions();
+        animate = cc.Animate.create(this.anims.run);
+        this.runAction( cc.RepeatForever.create(animate));
     },
 
     fall: function() {
         this.state = "jumping";
         this.getBody().SetLinearDamping(0);
+
+        this.stopAllActions();
+        animate = cc.Animate.create(this.anims.fall);
+        this.runAction( cc.RepeatForever.create(animate));
     },
 
     shoot: function() {
@@ -215,6 +248,10 @@ var Y2Actor = Y2BaseActor.extend({
         GameManager.currentScene.layer.addChild(sprite, 16);
         sprite.schedule(this.bulletSpriteUpdate, 1/60);
         this.bulletsShot++;
+
+        //this.stopAllActions();
+        //animate = cc.Animate.create(this.anims.shoot);
+        //this.runAction( animate );
     },
 
     bulletSpriteUpdate: function(dt){

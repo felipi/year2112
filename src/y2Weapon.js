@@ -1,3 +1,6 @@
+var BULLETW = 27;
+var BULLETH = 18;
+
 var Y2Weapon = cc.Class.extend({
     size: 1,
     fireRate: 5,
@@ -17,7 +20,7 @@ var Y2Weapon = cc.Class.extend({
         if(tex == null){
             tex = tc.addImage("res/bullets.png");
         }
-            frame = cc.SpriteFrame.createWithTexture(tex, cc.rect( bulleti * 27, bulletj*18, 27, 18));
+            frame = cc.SpriteFrame.createWithTexture(tex, cc.rect( bulleti * BULLETW, bulletj*BULLETH, BULLETW, BULLETH));
             cc.SpriteFrameCache.getInstance().addSpriteFrame(frame, this.name + "Bullet");
     }
 
