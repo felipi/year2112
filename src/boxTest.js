@@ -177,7 +177,6 @@ var Box2DTest = cc.Layer.extend({
 
     addEnemies: function() {
         var size = cc.Director.getInstance().getWinSize();
-        console.log("ADD ENEMIES");
         enemy = new Y2Enemy();
         spawnx = (size.width/this.ptmRatio) + enemy.size.w;
         spawny = 20 * Math.random();

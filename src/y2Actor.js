@@ -61,6 +61,7 @@ var Y2Actor = Y2BaseActor.extend({
         animate = cc.Animate.create(this.anims.run);
         this.runAction( cc.RepeatForever.create(animate));
 
+        //this.setBlendFunc( cc.BlendFunc(gl.ONE, gl.ONE));
     },
 
     createHitBox: function(){
@@ -278,6 +279,8 @@ var Y2Actor = Y2BaseActor.extend({
         
         //sprite = cc.Sprite.createWithTexture( cc.TextureCache.getInstance().textureForKey("res/bullet.png") );
         sprite = cc.Sprite.createWithSpriteFrame( cc.SpriteFrameCache.getInstance().getSpriteFrame( this.equip.weapon.name + "Bullet" ));
+        sprite.setBlendFunc(cc.BLEND_DST, cc.BLEND_SRC);
+        //sprite.setBlendFunc(gl.SRC_ALPHA, gl.ONE);
         bullet.SetUserData(sprite);
         sprite.fixture = bullet;
         GameManager.currentScene.layer.addChild(sprite, 16);
@@ -294,13 +297,57 @@ var Y2Actor = Y2BaseActor.extend({
             this.life -= dt;
         if(this.life <= 0) {
             this.unscheduleAllCallbacks();
-            this.getParent().removeChild(this);
+            //this.getParent().removeChild(this);
             GameManager.world.DestroyBody(this.fixture.GetBody());
+
+            this.emitter.destroyParticleSystem();
+            this.emitter.getParent().removeChild(this.emitter);
+            this.getParent().removeChild(this);
+            //this.emitter.setParent(this);
+            //this.emitter.getParent().removeChild(this.emitter);
+            //this.emitter.destroyParticleSystem();
             return;
+        }
+        if(this.emitter == undefined){
+            ///*
+            this.emitter = new cc.ParticleFire();
+            tc = cc.TextureCache.getInstance();
+            //this.emitter.setTexture( tc.addImage("res/particle.png"));
+            this.emitter.setBlendAdditive(false);
+            this.emitter.initWithTotalParticles(550);
+            //this.emitter.setAutoRemoveOnFinish(true);
+            this.emitter.setSpeed(10);
+            this.emitter.setEmissionRate(2000);
+            this.emitter.setZOrder(20);
+            this.emitter.setStartSize(2);
+            this.emitter.setEndSize(15);
+            //this.emitter.setPosVar(cc.p(-30,0));
+            //this.emitter.setEmitterMode(cc.PARTICLE_MODE_GRAVITY);
+            //this.emitter.setPosition(500,300);
+            //this.emitter.setBatchNode ( new cc.ParticleBatchNode() );
+
+            //this.emitter.setScaleX(2);
+            //this.emitter.setScaleY(0.5);
+            this.emitter.setLife(0.02);
+            //this.emitter.setAnchorPoint(cc.p(this.getPositionX - this.getContentSize().width, this.getPositionY));
+            this.emitter.setPositionType(cc.PARTICLE_TYPE_FREE);
+            this.emitter.setAngle(180);
+            this.emitter.setGravity(cc.p(-30,0));
+            //this.emitter.setSourcePosition(0,0);
+            //this.emitter.setPosition(cc.p(this.getPosition().x - this.getContentSize().width, this.getPosition().y+this.getContentSize().height));
+            this.emitter.setPosition(0,0);
+            this.getParent().addChild(this.emitter);
+            //*/
         }
         ptm = GameManager.currentScene.layer.ptmRatio;
         size = cc.Director.getInstance().getWinSize()
-        this.setRotation(this.fixture.GetBody().GetAngle() * 180/Math.PI);
+        this.emitter.setSourcePosition(cc.p(this.getPosition().x - this.getContentSize().width/2, (this.getPosition().y)));
+        angle = this.fixture.GetBody().GetAngle();
+        this.setRotation(angle * 180/Math.PI);
+        lv = this.fixture.GetBody().GetLinearVelocity();
+        console.log(angle);
+        this.emitter.setPosVar(cc.p((-lv.x/lv.y)*3, (-lv.y/lv.x)*3));
+        this.emitter.setAngle(angle);
         this.setPosition(
             this.fixture.GetBody().GetPosition().x * ptm,
             size.height - (this.fixture.GetBody().GetPosition().y * ptm)

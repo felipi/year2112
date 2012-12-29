@@ -39,6 +39,8 @@
             'libs/box2d/box2d.js',
             'libs/easeljs.js',
             'libs/tweenjs.js',
+            'libs/cocos2d/misc_nodes/CCRibbon.js',
+            'libs/cocos2d/misc_nodes/CCMotionStreak.js',
             'src/resource.js',
             'src/y2Manager.js',
             'src/y2Weapon.js',

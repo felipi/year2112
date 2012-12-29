@@ -66,7 +66,6 @@ var Y2Enemy = Y2BaseActor.extend({
     },
 
     shoot: function() {
-       console.log("Enemy shoot!");
        this.isShooting = true;
        
         var   b2Vec2 = Box2D.Common.Math.b2Vec2
